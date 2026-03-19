@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Geist', 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Light mode tokens */
+  --color-background: #f9fafb;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f3f4f6;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-text-primary: #0a0a0a;
+  --color-text-secondary: #4b5563;
+  --color-text-tertiary: #9ca3af;
+  --color-accent: #16a34a;
+  --color-accent-hover: #15803d;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-background: #0a0a0a;
+    --color-surface: #111111;
+    --color-surface-subtle: #1a1a1a;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-text-primary: #fafafa;
+    --color-text-secondary: #a1a1aa;
+    --color-text-tertiary: #52525b;
+    --color-accent: #22c55e;
+    --color-accent-hover: #16a34a;
+  }
+}
+
+[data-theme="dark"] {
+  --color-background: #0a0a0a;
+  --color-surface: #111111;
+  --color-surface-subtle: #1a1a1a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-text-primary: #fafafa;
+  --color-text-secondary: #a1a1aa;
+  --color-text-tertiary: #52525b;
+  --color-accent: #22c55e;
+  --color-accent-hover: #16a34a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
