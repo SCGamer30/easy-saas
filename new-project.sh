@@ -10,6 +10,28 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+# Preflight: ensure required CLIs are installed before we do anything destructive.
+missing=()
+for bin in gh vercel npx; do
+  if ! command -v "$bin" >/dev/null 2>&1; then
+    missing+=("$bin")
+  fi
+done
+
+if [ ${#missing[@]} -gt 0 ]; then
+  echo "Missing required CLIs: ${missing[*]}"
+  echo ""
+  echo "Install with:"
+  for bin in "${missing[@]}"; do
+    case "$bin" in
+      gh)     echo "  gh      → brew install gh           (https://cli.github.com)" ;;
+      vercel) echo "  vercel  → npm i -g vercel           (https://vercel.com/docs/cli)" ;;
+      npx)    echo "  npx     → install Node.js           (https://nodejs.org)" ;;
+    esac
+  done
+  exit 1
+fi
+
 PROJECT_NAME="$1"
 GITHUB_USER="scgamer30"
 PROJECTS_DIR="$HOME/Documents/GitHub"
@@ -41,9 +63,13 @@ echo "Creating GitHub repo..."
 gh repo create "$GITHUB_USER/$PROJECT_NAME" --private --source=. --remote=origin --push
 
 echo ""
-echo "Done! Your project is ready at $TARGET_DIR"
+echo "============================================================"
+echo "  Project ready at $TARGET_DIR"
+echo "============================================================"
 echo ""
-echo "Next steps:"
-echo "  1. Fill in .env.local with your Clerk, Convex, and Resend keys"
-echo "  2. Run: npm run dev"
-echo "  3. In a second terminal: npx convex dev"
+echo "Next step:"
+echo "  1. cd $TARGET_DIR"
+echo "  2. Open Claude Code and run:  /setup"
+echo ""
+echo "Claude Code will handle Convex, Vercel, Sentry, Cloudflare,"
+echo "and walk you through the remaining manual dashboard steps."

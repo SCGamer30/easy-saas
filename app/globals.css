@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --font-sans: 'Geist', 'Satoshi', ui-sans-serif, system-ui, sans-serif;
@@ -17,7 +17,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
+  :root:not([data-theme='light']) {
     --color-background: #0a0a0a;
     --color-surface: #111111;
     --color-surface-subtle: #1a1a1a;
@@ -30,7 +30,7 @@
   }
 }
 
-[data-theme="dark"] {
+[data-theme='dark'] {
   --color-background: #0a0a0a;
   --color-surface: #111111;
   --color-surface-subtle: #1a1a1a;
@@ -54,4 +54,22 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lenis smooth scroll — required baseline */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: clip;
 }
