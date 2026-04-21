@@ -18,6 +18,9 @@ build/
 # convex
 convex/_generated/
 
+# claude worktrees
+.claude/worktrees/
+
 # misc
 .DS_Store
 *.pem
