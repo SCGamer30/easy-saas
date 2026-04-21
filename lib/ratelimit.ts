@@ -17,10 +17,25 @@ export const emailRatelimit = new Ratelimit({
   prefix: 'rl:email',
 })
 
-export type RatelimitKind = 'ai' | 'email'
+// General-purpose limiter for authenticated API routes (checkout, billing
+// portal, contact, etc.). Wider than aiRatelimit because typical user actions
+// don't need to be as tight as LLM calls.
+export const apiRatelimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(20, '60 s'),
+  analytics: true,
+  prefix: 'rl:api',
+})
+
+export type RatelimitKind = 'ai' | 'email' | 'api'
+
+const LIMITERS: Record<RatelimitKind, Ratelimit> = {
+  ai: aiRatelimit,
+  email: emailRatelimit,
+  api: apiRatelimit,
+}
 
 export async function checkRateLimit(kind: RatelimitKind, identifier: string) {
-  const limiter = kind === 'ai' ? aiRatelimit : emailRatelimit
-  const { success, limit, remaining, reset } = await limiter.limit(identifier)
+  const { success, limit, remaining, reset } = await LIMITERS[kind].limit(identifier)
   return { success, limit, remaining, reset }
 }
