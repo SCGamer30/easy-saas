@@ -92,9 +92,19 @@
 
 On a fresh project, a `DESIGN.md` file at the project root is required before any UI work. During `/setup`, **auto-pick a theme for the user** using the heuristic below — only fall back to asking if the project intent is ambiguous.
 
-### Auto-pick heuristic (during `/setup`)
+### Project interview (required before theme selection)
 
-Infer from the project name (`package.json` `name`), any existing README, and anything the user has already said in-session:
+During `/setup`, ask the user these three questions FIRST — before picking a theme or writing any code:
+
+1. **What are you building?** (one-sentence description)
+2. **Who is it for?** (audience — devs, designers, consumers, enterprise, specific niche)
+3. **Brand/aesthetic preference?** (dark + minimal, warm + editorial, data-dense, playful, or "you pick")
+
+The answers drive theme selection, `NEXT_PUBLIC_PRODUCT_NAME`, and the tone of all placeholder copy. Skip the interview only if the user has already answered these things in-session.
+
+### Auto-pick heuristic (after the interview)
+
+Use the interview answers as the primary signal, and the project name as a fallback:
 
 | Signal in project name / README | Default theme |
 | --- | --- |

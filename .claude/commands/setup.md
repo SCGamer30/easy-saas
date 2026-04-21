@@ -7,9 +7,22 @@ description: Fully provision this boilerplate — installs deps, links Convex + 
 
 You are setting up a fresh clone of this boilerplate for the user. The user is NOT familiar with dashboard navigation. Do every automated step yourself, then give them copy-paste-grade manual instructions for the rest.
 
-## 0. Auto-pick a design theme (DO THIS FIRST — before any UI suggestions)
+## 0. Ask what the user is building (REQUIRED — theme depends on this)
 
-Infer an appropriate theme from the project name (`package.json` `name`) and any existing README or in-session context. Use the auto-pick heuristic table in `CLAUDE.md` → "Design Theme". Default to **Linear** if nothing matches.
+Before picking a theme, have a short conversation to understand the project. Project name alone is often not enough (`my-app`, `saas-starter`, etc.). Ask these exact questions in one message, numbered, so the user can answer inline:
+
+1. **What are you building?** One sentence — "a dashboard for tracking crypto portfolios", "a marketing site for a design agency", "an AI writing tool", etc.
+2. **Who is it for?** Developers, designers, general consumers, enterprise buyers, a specific niche?
+3. **Do you already have a brand / aesthetic in mind?** (dark + minimal, warm + editorial, data-dense, playful, etc.) — or should you pick one based on the domain?
+
+Wait for the answers before moving on. Use them to:
+- Override the name-based theme heuristic if the project is clearly in a different category than the name suggests.
+- Inform `NEXT_PUBLIC_PRODUCT_NAME` and the tone of copy in placeholder pages.
+- Guide all future UI decisions (density, motion, color, typography) alongside `DESIGN.md`.
+
+## 0a. Auto-pick a design theme (based on the answers above)
+
+Using the answers from step 0, infer an appropriate theme. Use the auto-pick heuristic table in `CLAUDE.md` → "Design Theme" as the baseline, but let the user's answers override the name-based guess. Default to **Linear** if nothing matches.
 
 Then, without prompting:
 
