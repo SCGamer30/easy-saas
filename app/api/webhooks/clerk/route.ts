@@ -11,8 +11,12 @@ export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
   const secret = process.env.CLERK_WEBHOOK_SECRET
+  const convexWebhookSecret = process.env.CONVEX_WEBHOOK_SECRET
   if (!secret) {
     return NextResponse.json({ error: 'Missing CLERK_WEBHOOK_SECRET' }, { status: 500 })
+  }
+  if (!convexWebhookSecret) {
+    return NextResponse.json({ error: 'Missing CONVEX_WEBHOOK_SECRET' }, { status: 500 })
   }
 
   const headerList = await headers()
@@ -47,6 +51,7 @@ export async function POST(req: Request) {
       const name = [first_name, last_name].filter(Boolean).join(' ') || undefined
 
       await convex.mutation(api.users.upsertUser, {
+        webhookSecret: convexWebhookSecret,
         clerkId: id,
         email: primaryEmail,
         name,

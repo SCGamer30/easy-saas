@@ -16,6 +16,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Missing signature' }, { status: 400 })
   }
 
+  const webhookSecret = process.env.CONVEX_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    return NextResponse.json({ error: 'Missing CONVEX_WEBHOOK_SECRET' }, { status: 500 })
+  }
+
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!)
@@ -39,6 +44,7 @@ export async function POST(req: Request) {
       const plan = subscription.items.data[0]?.price.lookup_key ?? 'default'
 
       await convex.mutation(api.subscriptions.upsertSubscription, {
+        webhookSecret,
         clerkId,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
@@ -56,6 +62,7 @@ export async function POST(req: Request) {
       const plan = subscription.items.data[0]?.price.lookup_key ?? 'default'
 
       await convex.mutation(api.subscriptions.updateSubscriptionByStripeCustomer, {
+        webhookSecret,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscription.id,
         status: subscription.status,

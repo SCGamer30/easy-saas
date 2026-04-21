@@ -31,6 +31,33 @@ npx convex dev --once --configure=new
 
 If the command prints a URL like `https://<name>.convex.cloud`, update `NEXT_PUBLIC_CONVEX_URL` in `.env.local` to that value.
 
+### 3a. Set Convex deployment env vars
+
+Generate a random shared secret for webhook → Convex mutations and set it in both `.env.local` and the Convex deployment:
+
+```bash
+# Generate a 32-byte hex secret
+CONVEX_WEBHOOK_SECRET=$(openssl rand -hex 32)
+
+# Write to .env.local (append if missing)
+grep -q '^CONVEX_WEBHOOK_SECRET=' .env.local \
+  && sed -i '' "s|^CONVEX_WEBHOOK_SECRET=.*|CONVEX_WEBHOOK_SECRET=$CONVEX_WEBHOOK_SECRET|" .env.local \
+  || echo "CONVEX_WEBHOOK_SECRET=$CONVEX_WEBHOOK_SECRET" >> .env.local
+
+# Push to Convex deployment
+npx convex env set CONVEX_WEBHOOK_SECRET "$CONVEX_WEBHOOK_SECRET"
+```
+
+Later, after the user completes step **A** (Clerk) and has their JWT issuer domain, set that in Convex too:
+
+```bash
+# Issuer URL looks like https://<your-subdomain>.clerk.accounts.dev
+# Find it in the Clerk dashboard → JWT Templates → convex → "Issuer" field
+npx convex env set CLERK_JWT_ISSUER_DOMAIN <issuer-url>
+```
+
+Without `CLERK_JWT_ISSUER_DOMAIN` set in Convex, `ctx.auth.getUserIdentity()` silently returns `null` — authenticated queries/mutations will think every caller is anonymous.
+
 ## 4. Link Vercel and pull env
 
 ```bash
@@ -90,6 +117,8 @@ Print this checklist verbatim to the user. Every step must be specific enough th
    - Click **New template**. Select the **Convex** preset.
    - The name must be exactly `convex` — do NOT change it.
    - Click **Apply changes**.
+   - On the template detail page, copy the **Issuer** URL (looks like `https://<slug>.clerk.accounts.dev`).
+   - In your terminal, run: `npx convex env set CLERK_JWT_ISSUER_DOMAIN <issuer-url>` — this is what `convex/auth.config.ts` reads. Without it, every Convex call thinks the user is anonymous.
 7. **Webhooks:**
    - In the left sidebar, click **Webhooks**, then click **Add Endpoint**.
    - **Endpoint URL:** `https://<your-domain>/api/webhooks/clerk` (use your Vercel production URL).

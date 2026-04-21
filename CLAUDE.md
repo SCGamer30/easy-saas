@@ -8,7 +8,7 @@
 - **Payments:** Stripe — helper at `lib/stripe.ts`, routes at `app/api/stripe/*`, subscription sync in `convex/subscriptions.ts`
 - **Email:** Resend — helper at `lib/resend.ts`, `FROM_EMAIL` env var controls the sender
 - **Analytics:** PostHog — initialized in `components/providers.tsx`
-- **Error Monitoring:** Sentry — configs at `sentry.{client,server,edge}.config.ts`, wraps `next.config.ts`
+- **Error Monitoring:** Sentry — `instrumentation.ts` + `instrumentation-client.ts` at repo root, server/edge configs at `sentry.{server,edge}.config.ts`, `withSentryConfig` wraps `next.config.ts`, error boundaries at `app/error.tsx` and `app/global-error.tsx`
 - **Rate Limiting:** Upstash Redis — limiters at `lib/ratelimit.ts`
 - **Background Jobs:** Trigger.dev — config at `trigger.config.ts`, tasks under `trigger/`
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — NO `tailwind.config.ts`, config lives in `app/globals.css`
@@ -77,6 +77,8 @@
 - `convex/_generated/` is gitignored — it's auto-generated.
 - Users table syncs automatically from Clerk via `app/api/webhooks/clerk/route.ts` → `upsertUser`.
 - Subscriptions table syncs from Stripe via `app/api/stripe/webhook/route.ts` → `upsertSubscription`.
+- **Auth:** `convex/auth.config.ts` reads `CLERK_JWT_ISSUER_DOMAIN` from the Convex deployment env — set it with `npx convex env set CLERK_JWT_ISSUER_DOMAIN <your-issuer-url>`. Without it, `ctx.auth.getUserIdentity()` silently returns `null` in every mutation/query.
+- **Webhook mutations:** `upsertUser`, `upsertSubscription`, and `updateSubscriptionByStripeCustomer` are public but gated by a shared `CONVEX_WEBHOOK_SECRET`. The secret lives in both Next.js env (for the webhook route to send) and Convex env (for the mutation to verify). Never remove the secret check — without it, anyone with the Convex URL can spoof user or subscription records.
 - To add a new table: update `convex/schema.ts`, add query/mutation files.
 
 ## Forms
@@ -111,7 +113,7 @@ Copy `.env.example` to `.env.local` and fill in. See `/setup` for exact steps. G
 
 - **App:** `NEXT_PUBLIC_APP_URL`
 - **Clerk:** publishable key, secret key, webhook secret
-- **Convex:** `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_DEPLOY_KEY`
+- **Convex:** `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_DEPLOY_KEY`, `CONVEX_WEBHOOK_SECRET` (must also be set in Convex env), `CLERK_JWT_ISSUER_DOMAIN` (set in Convex env only, not `.env.local`)
 - **Resend:** `RESEND_API_KEY`, `FROM_EMAIL`
 - **Stripe:** publishable key, secret key, webhook secret
 - **PostHog:** key, host
