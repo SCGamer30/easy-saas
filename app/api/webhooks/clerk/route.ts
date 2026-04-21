@@ -2,10 +2,15 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { Webhook } from 'svix'
 import type { WebhookEvent } from '@clerk/nextjs/server'
+import * as Sentry from '@sentry/nextjs'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
+import { sendWelcomeEmail } from '@/lib/resend'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+
+const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? 'Your App'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
 
 export const runtime = 'nodejs'
 
@@ -57,6 +62,19 @@ export async function POST(req: Request) {
         name,
         imageUrl: image_url,
       })
+
+      if (event.type === 'user.created') {
+        try {
+          await sendWelcomeEmail({
+            to: primaryEmail,
+            name: first_name ?? undefined,
+            productName: PRODUCT_NAME,
+            ctaUrl: `${APP_URL}/dashboard`,
+          })
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      }
       break
     }
 

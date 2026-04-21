@@ -6,7 +6,7 @@
 - **Auth:** Clerk (`@clerk/nextjs` v6) — middleware at `middleware.ts`, sign-in/up at `/sign-in` and `/sign-up`, webhook at `app/api/webhooks/clerk/route.ts`
 - **Database:** Convex — schema at `convex/schema.ts`, functions at `convex/*.ts`, HTTP router at `convex/http.ts`
 - **Payments:** Stripe — helper at `lib/stripe.ts`, routes at `app/api/stripe/*`, subscription sync in `convex/subscriptions.ts`
-- **Email:** Resend — helper at `lib/resend.ts`, `FROM_EMAIL` env var controls the sender
+- **Email:** Resend — helper at `lib/resend.ts`, React Email templates at `emails/*.tsx` (welcome, subscription-confirmed, subscription-canceled, transactional base). `FROM_EMAIL` and `NEXT_PUBLIC_PRODUCT_NAME` env vars control sender / branding. Preview locally via `npm run email:dev`.
 - **Analytics:** PostHog — initialized in `components/providers.tsx`
 - **Error Monitoring:** Sentry — `instrumentation.ts` + `instrumentation-client.ts` at repo root, server/edge configs at `sentry.{server,edge}.config.ts`, `withSentryConfig` wraps `next.config.ts`, error boundaries at `app/error.tsx` and `app/global-error.tsx`
 - **Rate Limiting:** Upstash Redis — limiters at `lib/ratelimit.ts`
@@ -90,18 +90,35 @@
 
 ## Design Theme (IMPORTANT — DO THIS BEFORE WRITING ANY UI)
 
-Before writing any UI on a fresh project, **ask the user which design theme they want**. Point them at the curated list:
+On a fresh project, a `DESIGN.md` file at the project root is required before any UI work. During `/setup`, **auto-pick a theme for the user** using the heuristic below — only fall back to asking if the project intent is ambiguous.
 
-- Source: `https://github.com/VoltAgent/awesome-design-md` — try to `WebFetch` the README for the current list.
-- Known options (non-exhaustive): Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier.
+### Auto-pick heuristic (during `/setup`)
 
-Once the user picks:
+Infer from the project name (`package.json` `name`), any existing README, and anything the user has already said in-session:
 
-1. Fetch the DESIGN.md at `https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/design-md/<site>/DESIGN.md` and save it to the project root as `DESIGN.md`.
-2. Also browse `https://designprompts.dev` for a matching aesthetic prompt and reference any useful excerpts.
-3. Treat `DESIGN.md` as the design bible — every UI decision should trace back to it.
+| Signal in project name / README | Default theme |
+| --- | --- |
+| AI / chat / agent / LLM | Claude |
+| Dev tools / CLI / API / SDK | Linear |
+| Payments / billing / fintech | Stripe |
+| Data / analytics / dashboard | Vercel |
+| Design / creative / media | Figma |
+| Database / infra / backend | Supabase |
+| Marketing site / landing-first | Apple |
+| Productivity / docs / notes | Notion |
+| Build tool / framework | Vercel |
+| Nothing specific | Linear (safe default) |
 
-**Do NOT write any UI code until the theme is confirmed and `DESIGN.md` is in the repo.**
+Then, **without prompting the user**:
+
+1. Pick the theme using the table (if no clear match, default to **Linear**).
+2. Fetch `https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/design-md/<site>/DESIGN.md` and save it to the project root as `DESIGN.md`.
+3. Announce the choice in one line: e.g. `Auto-selected Linear theme — see DESIGN.md. Say "switch theme to <name>" to change.`
+4. Only ask the user if the fetch fails or the project intent is genuinely ambiguous (e.g. name is `boilerplate` or `my-app`).
+
+The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
+
+Treat `DESIGN.md` as the design bible once written — every UI decision should trace back to it. **Do NOT write any UI code until `DESIGN.md` is in the repo.**
 
 ## Manual Setup Reminder
 
@@ -111,7 +128,7 @@ The user is not familiar with dashboard navigation. Whenever a manual setup step
 
 Copy `.env.example` to `.env.local` and fill in. See `/setup` for exact steps. Groups:
 
-- **App:** `NEXT_PUBLIC_APP_URL`
+- **App:** `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_PRODUCT_NAME`
 - **Clerk:** publishable key, secret key, webhook secret
 - **Convex:** `NEXT_PUBLIC_CONVEX_URL`, `CONVEX_DEPLOY_KEY`, `CONVEX_WEBHOOK_SECRET` (must also be set in Convex env), `CLERK_JWT_ISSUER_DOMAIN` (set in Convex env only, not `.env.local`)
 - **Resend:** `RESEND_API_KEY`, `FROM_EMAIL`
@@ -153,10 +170,19 @@ Never ship shadcn output in its default state.
 ```bash
 npm run dev          # Next.js dev server
 npm run convex:dev   # Convex dev (run in parallel with above)
+npm run email:dev    # React Email preview server at http://localhost:3001
 npm run build        # Production build
 npm run format       # Prettier
 npm run lint         # ESLint
 ```
+
+## Emails
+
+- Templates live in `emails/*.tsx` (React Email). Shared layout primitives at `emails/components/layout.tsx`.
+- Typed helpers in `lib/resend.ts`: `sendWelcomeEmail`, `sendSubscriptionConfirmedEmail`, `sendSubscriptionCanceledEmail`, `sendTransactionalEmail`, plus the legacy `sendEmail` for raw HTML.
+- Wiring: welcome email fires on Clerk `user.created`. Subscription confirmation fires on Stripe `checkout.session.completed`. Subscription cancellation fires on Stripe `customer.subscription.deleted`. Email failures are Sentry-captured but do not break the webhook.
+- When adding a new email: copy `emails/transactional.tsx` as a starting point, export `default` + a `PreviewProps` literal so it shows in `email:dev`, then add a typed `sendXxxEmail` helper to `lib/resend.ts`.
+- Never ship inline-style soup — use the primitives from `emails/components/layout.tsx` (`EmailLayout`, `Heading`, `Paragraph`, `ActionButton`, `DetailRow`).
 
 ## Bootstrap
 

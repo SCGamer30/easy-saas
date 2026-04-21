@@ -1,10 +1,34 @@
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
+import * as Sentry from '@sentry/nextjs'
 import { stripe } from '@/lib/stripe'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
+import {
+  sendSubscriptionCanceledEmail,
+  sendSubscriptionConfirmedEmail,
+} from '@/lib/resend'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+
+const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? 'Your App'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+
+function formatAmount(subscription: Stripe.Subscription) {
+  const item = subscription.items.data[0]
+  const unit = (item?.price.unit_amount ?? 0) / 100
+  const currency = (item?.price.currency ?? 'usd').toUpperCase()
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(unit)
+}
+
+function formatDate(unixSeconds: number | null | undefined) {
+  if (!unixSeconds) return undefined
+  return new Date(unixSeconds * 1000).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
 
 export const runtime = 'nodejs'
 
@@ -51,6 +75,27 @@ export async function POST(req: Request) {
         status: subscription.status,
         plan,
       })
+
+      const email = session.customer_details?.email
+      const customerName = session.customer_details?.name ?? undefined
+      if (email) {
+        try {
+          const item = subscription.items.data[0]
+          const interval = item?.price.recurring?.interval === 'year' ? 'year' : 'month'
+          await sendSubscriptionConfirmedEmail({
+            to: email,
+            name: customerName,
+            productName: PRODUCT_NAME,
+            planName: plan.charAt(0).toUpperCase() + plan.slice(1),
+            amount: formatAmount(subscription),
+            interval,
+            nextBillingDate: formatDate(item?.current_period_end),
+            manageUrl: `${APP_URL}/dashboard/billing`,
+          })
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      }
       break
     }
 
@@ -68,6 +113,25 @@ export async function POST(req: Request) {
         status: subscription.status,
         plan,
       })
+
+      if (event.type === 'customer.subscription.deleted') {
+        try {
+          const customer = await stripe.customers.retrieve(customerId)
+          if (customer && !customer.deleted && customer.email) {
+            const item = subscription.items.data[0]
+            await sendSubscriptionCanceledEmail({
+              to: customer.email,
+              name: customer.name ?? undefined,
+              productName: PRODUCT_NAME,
+              planName: plan.charAt(0).toUpperCase() + plan.slice(1),
+              endsAt: formatDate(item?.current_period_end) ?? 'the end of this billing period',
+              resubscribeUrl: `${APP_URL}/pricing`,
+            })
+          }
+        } catch (err) {
+          Sentry.captureException(err)
+        }
+      }
       break
     }
   }

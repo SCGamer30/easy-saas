@@ -1,11 +1,26 @@
 ---
 name: setup
-description: Fully provision this boilerplate — installs deps, links Convex + Vercel + Sentry + Cloudflare + Trigger.dev, then walks the user through every remaining manual step with exact click-by-click instructions.
+description: Fully provision this boilerplate — installs deps, links Convex + Vercel + Sentry + Cloudflare + Trigger.dev, auto-picks a design theme, then walks the user through every remaining manual step with exact click-by-click instructions.
 ---
 
 # /setup
 
 You are setting up a fresh clone of this boilerplate for the user. The user is NOT familiar with dashboard navigation. Do every automated step yourself, then give them copy-paste-grade manual instructions for the rest.
+
+## 0. Auto-pick a design theme (DO THIS FIRST — before any UI suggestions)
+
+Infer an appropriate theme from the project name (`package.json` `name`) and any existing README or in-session context. Use the auto-pick heuristic table in `CLAUDE.md` → "Design Theme". Default to **Linear** if nothing matches.
+
+Then, without prompting:
+
+```bash
+THEME=linear   # or the slug you picked — see CLAUDE.md for the table
+curl -fsSL "https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/design-md/$THEME/DESIGN.md" -o DESIGN.md
+```
+
+Announce the choice in one line: `Auto-selected <Theme> theme — see DESIGN.md. Say "switch theme to <name>" to change.` Only ask the user if the curl fails or the project intent is genuinely ambiguous (e.g. name is literally `boilerplate` or `my-app`).
+
+Also set `NEXT_PUBLIC_PRODUCT_NAME` in `.env.local` to a reasonable display name inferred from the project name (Title Case) — this shows in email subjects and headers.
 
 ## 1. Ensure `.env.local` exists
 
