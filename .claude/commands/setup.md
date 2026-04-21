@@ -141,34 +141,68 @@ Print this checklist verbatim to the user. Every step must be specific enough th
    - Click **Create**.
    - On the endpoint detail page, click **Signing Secret** → copy (starts with `whsec_`) → paste into `.env.local` as `CLERK_WEBHOOK_SECRET`.
 
-### B. Stripe — Publishable Key, Secret Key, Webhook Secret, Products
+### B. Stripe — Publishable Key, Secret Key, Products, Webhook (mostly CLI-driven)
 
-1. Go to https://dashboard.stripe.com and sign in. Make sure the **Test mode** toggle (top right) is ON.
-2. Click **Developers** in the top nav, then **API keys** in the left sidebar.
-3. Copy the **Publishable key** (starts with `pk_test_`) — paste into `.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
-4. Click **Reveal test key** next to the **Secret key**. Copy it (starts with `sk_test_`) — paste into `.env.local` as `STRIPE_SECRET_KEY`.
-5. **Webhooks (production):**
-   - In the left sidebar under Developers, click **Webhooks**, then **Add endpoint**.
-   - **Endpoint URL:** `https://<your-domain>/api/stripe/webhook`.
-   - Click **Select events** and check:
-     - `checkout.session.completed`
-     - `customer.subscription.updated`
-     - `customer.subscription.deleted`
-   - Click **Add events**, then **Add endpoint**.
-   - On the endpoint detail page, click **Reveal** under **Signing secret**. Copy (starts with `whsec_`) → paste into `.env.local` as `STRIPE_WEBHOOK_SECRET`.
-6. **Webhooks (local dev):** Stripe can't POST to localhost, so forward events locally:
-   ```bash
-   brew install stripe/stripe-cli/stripe   # first time only
-   stripe login
-   stripe listen --forward-to localhost:3000/api/stripe/webhook
-   ```
-   The `stripe listen` command prints a `whsec_...` signing secret. For local dev, paste that into `.env.local` as `STRIPE_WEBHOOK_SECRET` (different from production).
-7. **Create products and prices — CRITICAL, lookup_key must match exactly:**
-   - In the left sidebar, click **Product catalog** → **Add product**.
-   - Create a product called **Pro**. Add a recurring price (e.g. $20/month).
-   - After creating the price, click it to open its detail page. Click **Edit price** → scroll to **Lookup key** → set it to `pro` (exactly that slug, lowercase).
-   - Repeat for **Studio**: create the product, add a price, set the **Lookup key** to `studio`.
-   - If you plan to gate features by plan name (e.g. `isPro`, `isStudio` from `useUser()`), the lookup key in Stripe must match **exactly** — the Convex `subscriptions.plan` field stores whatever Stripe sends in `price.lookup_key`. Mismatches cause silent billing bugs (paid users show as unpaid).
+Install the Stripe CLI once: `brew install stripe/stripe-cli/stripe` (macOS) or see [stripe.com/docs/stripe-cli](https://stripe.com/docs/stripe-cli).
+
+**B1. Authenticate (one browser click):**
+
+```bash
+stripe login
+```
+
+This opens a browser — click **Allow access**. The CLI now acts against your Stripe account.
+
+**B2. Grab API keys (the only dashboard step left):**
+
+1. Go to https://dashboard.stripe.com/test/apikeys — **Test mode** must be on.
+2. Copy the **Publishable key** (`pk_test_…`) → `.env.local` as `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`.
+3. Click **Reveal test key** next to the **Secret key**. Copy (`sk_test_…`) → `.env.local` as `STRIPE_SECRET_KEY`.
+
+There's no API for fetching the secret key — this is the one dashboard step Stripe doesn't allow to be scripted.
+
+**B3. Create products, prices, and webhook via CLI:**
+
+```bash
+# Pro plan — $20/month, lookup_key=pro
+PRO_PRODUCT=$(stripe products create --name="Pro" --format=json | jq -r '.id')
+stripe prices create \
+  --product="$PRO_PRODUCT" \
+  --unit-amount=2000 \
+  --currency=usd \
+  -d "recurring[interval]=month" \
+  --lookup-key=pro
+
+# Studio plan — $50/month, lookup_key=studio
+STUDIO_PRODUCT=$(stripe products create --name="Studio" --format=json | jq -r '.id')
+stripe prices create \
+  --product="$STUDIO_PRODUCT" \
+  --unit-amount=5000 \
+  --currency=usd \
+  -d "recurring[interval]=month" \
+  --lookup-key=studio
+
+# Production webhook — replace <your-domain> with your Vercel URL
+WEBHOOK_SECRET=$(stripe webhook_endpoints create \
+  --url="https://<your-domain>/api/stripe/webhook" \
+  --enabled-events=checkout.session.completed \
+  --enabled-events=customer.subscription.updated \
+  --enabled-events=customer.subscription.deleted \
+  --format=json | jq -r '.secret')
+echo "STRIPE_WEBHOOK_SECRET=$WEBHOOK_SECRET"
+```
+
+Paste the printed `STRIPE_WEBHOOK_SECRET` into `.env.local`.
+
+> **Lookup key discipline:** `pro` and `studio` map to `useUser()` booleans `isPro` / `isStudio`. If you change these, update `hooks/use-user.ts` in the same commit — mismatches cause silent billing bugs.
+
+**B4. Local dev webhook forwarding (keep running in a terminal):**
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+The command prints a different `whsec_…` for local — use that in `.env.local` during dev, and swap in the production `whsec_…` when deploying.
 
 ### C. Resend — API Key + Verified Domain
 
@@ -184,22 +218,71 @@ Print this checklist verbatim to the user. Every step must be specific enough th
    - Back in Resend, click **Verify DNS Records**. Wait up to 10 minutes for propagation. When all three show green, the domain is verified.
 5. Update `FROM_EMAIL` in `.env.local` to a sender at that domain (e.g. `noreply@yourdomain.com`).
 
-### D. Upstash Redis — REST URL, REST Token
+### D. Upstash Redis — REST URL, REST Token (API-driven if you have a management key)
 
-1. Go to https://console.upstash.com and sign in.
-2. Click **Create Database** (top right). Choose **Redis**. Name it after your project. Region: the nearest one to your Vercel region. Click **Create**.
-3. On the database page, scroll down to **REST API**.
-4. Copy **UPSTASH_REDIS_REST_URL** — paste into `.env.local` with the same name.
-5. Copy **UPSTASH_REDIS_REST_TOKEN** — paste into `.env.local` with the same name.
+**D1. Get a management API key (one-time, reused across all your projects):**
 
-### E. PostHog (optional, skip if not using analytics)
+1. Go to https://console.upstash.com/account/api
+2. Click **Create API Key**. Name it `cli`. Copy it.
+3. Save it to your shell profile so it's available for every project:
+   ```bash
+   # Add to ~/.zshrc or ~/.bashrc
+   export UPSTASH_EMAIL="you@example.com"
+   export UPSTASH_API_KEY="<the key you just copied>"
+   ```
+   Reload: `source ~/.zshrc`.
 
-1. Go to https://us.posthog.com and sign in.
-2. Click the project selector (top left), then **New project**. Name it.
-3. Go to **Project settings** (gear icon, bottom left) → **Project API keys**.
-4. Copy the **Project API key** — paste into `.env.local` as `NEXT_PUBLIC_POSTHOG_KEY`.
-5. `NEXT_PUBLIC_POSTHOG_HOST` stays as `https://us.i.posthog.com` unless you're on EU cloud.
-6. Note: PostHog only initializes in production builds (see `components/providers.tsx`). You will NOT see events during `npm run dev`.
+**D2. Create the Redis database via API:**
+
+```bash
+PROJECT_NAME=$(node -p "require('./package.json').name")
+RESPONSE=$(curl -s -u "$UPSTASH_EMAIL:$UPSTASH_API_KEY" \
+  -X POST "https://api.upstash.com/v2/redis/database" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"$PROJECT_NAME\",\"region\":\"us-east-1\",\"tls\":true}")
+
+REST_URL=$(echo "$RESPONSE" | jq -r '.rest_endpoint')
+REST_TOKEN=$(echo "$RESPONSE" | jq -r '.rest_token')
+
+# Write to .env.local
+sed -i '' "s|^UPSTASH_REDIS_REST_URL=.*|UPSTASH_REDIS_REST_URL=https://$REST_URL|" .env.local
+sed -i '' "s|^UPSTASH_REDIS_REST_TOKEN=.*|UPSTASH_REDIS_REST_TOKEN=$REST_TOKEN|" .env.local
+```
+
+**Fallback if you don't want a management key:** create the database manually at https://console.upstash.com → **Create Database** → Redis → copy `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from the **REST API** section into `.env.local`.
+
+### E. PostHog — Project API Key (API-driven if you have a personal key)
+
+**E1. Get a personal API key (one-time, reused across all your projects):**
+
+1. Go to https://us.posthog.com/settings/user-api-keys
+2. Click **Create personal API key**. Scope: **Project:Create** + **Project:Read**. Copy it.
+3. Save to your shell profile:
+   ```bash
+   # Add to ~/.zshrc or ~/.bashrc
+   export POSTHOG_PERSONAL_API_KEY="<the key you just copied>"
+   ```
+   Reload: `source ~/.zshrc`.
+
+**E2. Create the project via API:**
+
+```bash
+PROJECT_NAME=$(node -p "require('./package.json').name")
+RESPONSE=$(curl -s -X POST "https://us.posthog.com/api/projects/" \
+  -H "Authorization: Bearer $POSTHOG_PERSONAL_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\":\"$PROJECT_NAME\"}")
+
+POSTHOG_KEY=$(echo "$RESPONSE" | jq -r '.api_token')
+
+sed -i '' "s|^NEXT_PUBLIC_POSTHOG_KEY=.*|NEXT_PUBLIC_POSTHOG_KEY=$POSTHOG_KEY|" .env.local
+```
+
+`NEXT_PUBLIC_POSTHOG_HOST` stays as `https://us.i.posthog.com` unless you're on EU cloud.
+
+**Fallback:** https://us.posthog.com → project selector → **New project** → **Project settings** → **Project API keys** → copy into `.env.local`.
+
+> PostHog only initializes in production builds (see `components/providers.tsx`). You won't see events during `npm run dev`.
 
 ### F. Trigger.dev (skip if you didn't run step 7)
 
