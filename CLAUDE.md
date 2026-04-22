@@ -14,7 +14,9 @@
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — NO `tailwind.config.ts`, config lives in `app/globals.css`
 - **UI Components:** shadcn/ui (add via `npx shadcn@latest add <component>`) — base Skeleton at `components/ui/skeleton.tsx`
 - **Icons:** `@phosphor-icons/react` exclusively — no lucide, no heroicons, no emoji
-- **Motion:** `framer-motion` — use `useMotionValue`/`useTransform` for continuous animations, never `useState`
+- **Motion:** `framer-motion` (primary), `gsap` + `ScrollTrigger` (scroll-driven timelines), `animejs` (SVG/DOM keyframes) — import GSAP/Anime from `lib/gsap.ts` / `lib/anime.ts`, never directly. Page transitions: `components/page-transition.tsx` (Framer + AnimatePresence, App Router–native) or `components/barba-transition.tsx` (Barba.js, opt-in for non-RSC subsites).
+- **WebGL:** `three` + `@react-three/fiber` + `@react-three/drei` — wrapper at `components/webgl-scene.tsx`. Always import via `next/dynamic({ ssr: false })` to keep three.js out of the initial bundle.
+- **Blend modes:** `components/blend-layer.tsx` — `<BlendLayer mode="difference">` for photo-negative cursors, crisp accent overlays. Keep blended subtrees small (compositor cost).
 - **Smooth Scroll:** `lenis` — wired globally via `components/smooth-scroll.tsx` inside `Providers`. Opt-out a region with `data-lenis-prevent` on the scroll container.
 - **Utilities:** `cn()` from `lib/utils.ts`, typed errors in `lib/errors.ts`, SEO in `lib/metadata.ts`
 - **Hooks:** `useUser()` from `hooks/use-user.ts` — combined Clerk + Convex + subscription
@@ -87,6 +89,28 @@
 - **Embeddable forms:** Youform. Paste the embed snippet.
 - **Newsletter signups:** beehiiv. Use the embed form or its API.
 - Only build a custom backend form when none of the above fit (e.g. the submission must trigger server-side logic).
+
+## Motion & WebGL — which tool for which job
+
+Four animation tools are available. Pick the right one per use case, don't reach for all of them on every project:
+
+| Use case | Tool | Why |
+| --- | --- | --- |
+| Component entrance, hover, layout animations | **Framer Motion** | Declarative, React-native, spring physics built-in |
+| Scroll-driven sequences (pin, parallax, story scroll) | **GSAP + ScrollTrigger** | Timelines with labels, scrubbing, snap — nothing else comes close |
+| Route transitions (App Router) | `components/page-transition.tsx` | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe |
+| Full-takeover page transitions on a marketing subsite | `components/barba-transition.tsx` | Barba.js — only for `<a>`-driven subsites, NOT App Router proper |
+| SVG path morphing, stroke-dash, staggered DOM keyframes | **Anime.js** | Lighter than GSAP for simple keyframe-style work outside React |
+| Hero 3D, shader backgrounds, GPU-driven visuals | `components/webgl-scene.tsx` (react-three-fiber) | Dynamic-imported, lazy-loaded, drei helpers included |
+| Inverted cursor / high-contrast overlays | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath |
+
+Rules:
+
+- **Never install a new animation library.** The four above cover everything. If you think you need something else (Motion One, Theatre.js, etc.), first check whether GSAP or Framer already does it.
+- **GSAP in React:** always wrap timelines in `gsap.context(() => {...}, rootRef)` and call `ctx.revert()` on cleanup. Without this, animations leak on route changes.
+- **three.js imports:** always via `next/dynamic({ ssr: false })`. three.js is ~600KB gzipped — it should never hit pages that don't need it.
+- **mix-blend-mode cost:** forces an isolated compositor layer. Fine for small overlays, disastrous if you wrap the whole page.
+- **Respect `prefers-reduced-motion`:** gate non-essential animations with `useReducedMotion()` from Framer, or check `window.matchMedia('(prefers-reduced-motion: reduce)')` in GSAP/Anime.
 
 ## Design Theme (IMPORTANT — DO THIS BEFORE WRITING ANY UI)
 
