@@ -16,6 +16,9 @@
 - **Icons:** `@phosphor-icons/react` exclusively — no lucide, no heroicons, no emoji
 - **Motion:** `framer-motion` (primary), `gsap` + `ScrollTrigger` (scroll-driven timelines), `animejs` (SVG/DOM keyframes) — import GSAP/Anime from `lib/gsap.ts` / `lib/anime.ts`, never directly. Page transitions: `components/page-transition.tsx` (Framer + AnimatePresence, App Router–native) or `components/barba-transition.tsx` (Barba.js, opt-in for non-RSC subsites).
 - **WebGL:** `three` + `@react-three/fiber` + `@react-three/drei` — wrapper at `components/webgl-scene.tsx`. Always import via `next/dynamic({ ssr: false })` to keep three.js out of the initial bundle.
+- **Rive:** `@rive-app/react-canvas` — wrapper at `components/rive-scene.tsx`. Use for interactive/stateful animations with input-driven state machines.
+- **Lottie:** `@lottiefiles/dotlottie-react` — wrapper at `components/lottie-player.tsx`. Use for designer-exported playback animations (.lottie format preferred over legacy .json).
+- **AutoAnimate:** `@formkit/auto-animate/react` — hook at `hooks/use-auto-animate.ts`. Drop a single ref on a list container to auto-animate add/remove/reorder.
 - **Blend modes:** `components/blend-layer.tsx` — `<BlendLayer mode="difference">` for photo-negative cursors, crisp accent overlays. Keep blended subtrees small (compositor cost).
 - **Smooth Scroll:** `lenis` — wired globally via `components/smooth-scroll.tsx` inside `Providers`. Opt-out a region with `data-lenis-prevent` on the scroll container.
 - **Utilities:** `cn()` from `lib/utils.ts`, typed errors in `lib/errors.ts`, SEO in `lib/metadata.ts`
@@ -102,6 +105,9 @@ Four animation tools are available. Pick the right one per use case, don't reach
 | Full-takeover page transitions on a marketing subsite | `components/barba-transition.tsx` | Barba.js — only for `<a>`-driven subsites, NOT App Router proper |
 | SVG path morphing, stroke-dash, staggered DOM keyframes | **Anime.js** | Lighter than GSAP for simple keyframe-style work outside React |
 | Hero 3D, shader backgrounds, GPU-driven visuals | `components/webgl-scene.tsx` (react-three-fiber) | Dynamic-imported, lazy-loaded, drei helpers included |
+| Designer-exported playback animation (empty state, hero illustration, success confetti) | `components/lottie-player.tsx` (dotLottie) | Designer owns the animation, you embed the `.lottie` file |
+| Interactive, input-driven animation (mascots, illustrated toggles, scrubbable characters) | `components/rive-scene.tsx` (Rive) | State machines respond to pointer/scroll/app state in real time |
+| List/grid enter-leave-reorder animations | `hooks/use-auto-animate.ts` (AutoAnimate) | One ref, zero config — animates any children change automatically |
 | Inverted cursor / high-contrast overlays | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath |
 
 Rules:
