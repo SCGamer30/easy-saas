@@ -171,6 +171,42 @@ The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Su
 
 Treat `DESIGN.md` as the design bible once written — every UI decision should trace back to it. **Do NOT write any UI code until `DESIGN.md` is in the repo.**
 
+## MCP servers and CLIs — USE THEM, DON'T ASK
+
+Whenever a task involves a service with an available MCP server or CLI, **use it immediately without asking permission**. Never ask "should I use the Stripe MCP?" or "do you want me to check Convex?" — just use it. The user has installed these tools precisely so you don't ask.
+
+Available MCP servers (call them silently when relevant):
+
+| Service | Use the MCP for |
+| --- | --- |
+| **Clerk** | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard |
+| **Convex** | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
+| **Resend** | Creating API keys, domains, sending test emails, checking delivery status |
+| **Vercel** | Listing deployments, env vars, logs, project info |
+| **Sentry** | Creating projects, querying errors, looking up issue details |
+| **Cloudflare** | Looking up zones, creating/listing DNS records |
+| **Stripe** | Creating products / prices / webhooks, querying customers, refunds, invoice lookup |
+| **Upstash** | Creating Redis databases, listing instances |
+| **PostHog** | Creating projects, running analytics queries |
+| **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
+| **Context7** | Library / framework / SDK documentation lookups |
+| **Playwright** | Browser automation for testing or scraping |
+
+Available CLIs (use without asking — these are pre-installed):
+
+| CLI | Use it for |
+| --- | --- |
+| `npx convex …` | Convex deploys, env var sets, codegen |
+| `vercel …` | Linking, env push/pull, deploy, logs |
+| `stripe …` | Local webhook forwarding (`stripe listen`), test events (`stripe trigger`), products/prices/webhooks |
+| `gh …` | Anything GitHub — issues, PRs, repo create |
+| `npx trigger.dev …` | Trigger.dev init, deploy |
+| `resend …` (if installed) | Domain create/verify, fallback if MCP missing |
+
+**The rule:** if the task touches a service in the table above, your first move is the MCP/CLI call, not a question. Only fall back to "manual dashboard instructions" if the relevant MCP shows as not connected or the call returns an auth error.
+
+For initial project setup, follow `/setup` — it has the canonical priority order (MCP first, CLI fallback, manual last).
+
 ## Documentation Lookups
 
 Use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask. Trigger automatically whenever the task involves a specific library, framework, SDK, CLI tool, or cloud service — even well-known ones (Next.js, React, Tailwind, Stripe, Convex, Clerk, Resend, etc.). Your training data may be stale; verify against current docs before writing code that touches a third-party API.
