@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import * as Sentry from '@sentry/nextjs'
-import { stripe } from '@/lib/stripe'
+import { getStripe, isStripeConfigured } from '@/lib/stripe'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
 import {
@@ -33,6 +33,14 @@ function formatDate(unixSeconds: number | null | undefined) {
 export const runtime = 'nodejs'
 
 export async function POST(req: Request) {
+  if (!isStripeConfigured()) {
+    // Project hasn't enabled payments yet. Return 200 so Stripe doesn't keep
+    // retrying — but don't process anything. (In practice, no webhook should
+    // be reaching this URL if Stripe isn't configured, but guard anyway.)
+    return NextResponse.json({ received: true, skipped: 'stripe-not-configured' })
+  }
+
+  const stripe = getStripe()
   const body = await req.text()
   const signature = req.headers.get('stripe-signature')
 

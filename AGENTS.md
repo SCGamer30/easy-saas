@@ -1,4 +1,4 @@
-# Boilerplate — Claude Context
+# Boilerplate — Codex Context
 
 ## Stack
 
@@ -42,17 +42,6 @@
 - Isolate heavy animations in their own leaf Client Components — never co-locate with data fetching.
 - Use `min-h-[100dvh]` for full-height sections. Never `h-screen`.
 - Use CSS Grid over flex math for layouts.
-
-## Stripe is OPTIONAL — opt-in, not on by default
-
-Most projects don't need payments on day one. The boilerplate ships with `STRIPE_SECRET_KEY` empty, and `lib/stripe.ts` lazy-inits — the app runs fine without it. **Never assume the user wants Stripe** unless they've explicitly said so or set `STRIPE_SECRET_KEY` in `.env.local`.
-
-- `isStripeConfigured()` from `lib/stripe.ts` is the source of truth. `getStripe()` throws `StripeNotConfiguredError` if called when env vars are missing — handle this in any new Stripe-touching route.
-- Existing routes (`/api/stripe/*`) already return `503` with a "run /add-stripe" message when not configured. Follow the same pattern for any new payment-touching code.
-- The webhook handler (`/api/stripe/webhook/route.ts`) returns 200 with `skipped: 'stripe-not-configured'` if env vars are missing — never let it 500.
-- If the user asks for something payment-related and `isStripeConfigured()` returns false, **stop and ask first** whether they want to enable payments now (run `/add-stripe`) or whether they want the feature stubbed without billing.
-
-To enable payments later, the user runs `/add-stripe` — that command provisions products, prices, the webhook, and writes env vars. Until then, leave the Stripe scaffolding alone and don't generate Stripe-dependent code.
 
 ## Stripe — DO NOT CREATE DUPLICATE ROUTES
 
@@ -149,7 +138,7 @@ Use the interview answers as the primary signal, and the project name as a fallb
 
 | Signal in project name / README | Default theme |
 | --- | --- |
-| AI / chat / agent / LLM | Claude |
+| AI / chat / agent / LLM | Codex |
 | Dev tools / CLI / API / SDK | Linear |
 | Payments / billing / fintech | Stripe |
 | Data / analytics / dashboard | Vercel |
@@ -167,19 +156,13 @@ Then, **without prompting the user**:
 3. Announce the choice in one line: e.g. `Auto-selected Linear theme — see DESIGN.md. Say "switch theme to <name>" to change.`
 4. Only ask the user if the fetch fails or the project intent is genuinely ambiguous (e.g. name is `boilerplate` or `my-app`).
 
-The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
+The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Codex, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
 
 Treat `DESIGN.md` as the design bible once written — every UI decision should trace back to it. **Do NOT write any UI code until `DESIGN.md` is in the repo.**
 
-## Documentation Lookups
-
-Use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask. Trigger automatically whenever the task involves a specific library, framework, SDK, CLI tool, or cloud service — even well-known ones (Next.js, React, Tailwind, Stripe, Convex, Clerk, Resend, etc.). Your training data may be stale; verify against current docs before writing code that touches a third-party API.
-
-Skip Context7 for: refactoring, business logic debugging, code review, general programming concepts.
-
 ## Manual Setup Reminder
 
-The user is not familiar with dashboard navigation. Whenever a manual setup step is required (grabbing an API key, configuring a webhook, creating a domain record, etc.), provide **exact, click-by-click instructions** — specific page names, button labels, and where to find each value. Never say "grab your API key from the dashboard" — always spell it out. The `/setup` slash command at `.claude/commands/setup.md` is the canonical reference for what manual instructions should look like.
+The user is not familiar with dashboard navigation. Whenever a manual setup step is required (grabbing an API key, configuring a webhook, creating a domain record, etc.), provide **exact, click-by-click instructions** — specific page names, button labels, and where to find each value. Never say "grab your API key from the dashboard" — always spell it out. The `/setup` slash command at `.Codex/commands/setup.md` is the canonical reference for what manual instructions should look like.
 
 ## Environment Variables
 
@@ -202,7 +185,7 @@ Copy `.env.example` to `.env.local` and fill in. See `/setup` for exact steps. G
 - VISUAL_DENSITY: 4 — daily app spacing, not cockpit, not gallery
 - No emoji, no Inter, no centered heroes, no 3-equal-card rows, no purple glows
 - Use `@phosphor-icons/react` for all icons
-- Full rules live in `.claude/commands/design-taste-frontend.md`. Invoke `/design-taste-frontend` for the full spec.
+- Full rules live in `.Codex/commands/design-taste-frontend.md`. Invoke `/design-taste-frontend` for the full spec.
 
 ## Adding shadcn Components
 
@@ -243,4 +226,4 @@ npm run lint         # ESLint
 
 ## Bootstrap
 
-New clone? Open Claude Code in the project directory and run `/setup`. It handles everything automatically and walks you through the remaining manual steps.
+New clone? Open Codex in the project directory and run `/setup`. It handles everything automatically and walks you through the remaining manual steps.

@@ -14,6 +14,7 @@ Before picking a theme, have a short conversation to understand the project. Pro
 1. **What are you building?** One sentence — "a dashboard for tracking crypto portfolios", "a marketing site for a design agency", "an AI writing tool", etc.
 2. **Who is it for?** Developers, designers, general consumers, enterprise buyers, a specific niche?
 3. **Do you already have a brand / aesthetic in mind?** (dark + minimal, warm + editorial, data-dense, playful, etc.) — or should you pick one based on the domain?
+4. **Are you adding payments now, or later?** Default is **later**. Most projects don't need Stripe on day one — ship the product first, add billing when there's something worth charging for. If "later," skip section B (Stripe) entirely; the user can run `/add-stripe` to enable it whenever they're ready. The boilerplate's `lib/stripe.ts` lazy-inits, so the app runs fine without `STRIPE_SECRET_KEY` set.
 
 Wait for the answers before moving on. Use them to:
 - Override the name-based theme heuristic if the project is clearly in a different category than the name suggests.

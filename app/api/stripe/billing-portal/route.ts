@@ -2,12 +2,19 @@ import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
-import { createBillingPortalSession } from '@/lib/stripe'
+import { createBillingPortalSession, isStripeConfigured } from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
 export async function POST(req: Request) {
+  if (!isStripeConfigured()) {
+    return NextResponse.json(
+      { error: 'Payments are not enabled in this project. Run `/add-stripe` in Claude Code to provision Stripe.' },
+      { status: 503 },
+    )
+  }
+
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
