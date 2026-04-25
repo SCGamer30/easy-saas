@@ -217,19 +217,64 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 The command prints a different `whsec_…` for local — use that in `.env.local` during dev, and swap in the production `whsec_…` when deploying.
 
-### C. Resend — API Key + Verified Domain
+### C. Resend — API Key + Verified Domain (mostly CLI-driven)
+
+Install the Resend CLI once: `npm i -g resend-cli` (or use `npx resend-cli@latest`).
+
+**C1. Get the bootstrap API key (only dashboard step):**
+
+The first API key has to come from the dashboard — the CLI itself needs an API key to authenticate.
 
 1. Go to https://resend.com/api-keys and sign in.
-2. Click **Create API Key**. Name it after your project. Permission: **Full access**. Click **Add**.
-3. Copy the key (starts with `re_`) — paste into `.env.local` as `RESEND_API_KEY`.
-4. **Verify your domain (required to send from anything other than Resend's sandbox):**
-   - In the Resend sidebar, click **Domains** → **Add Domain**.
-   - Enter the domain you'll send email from (e.g. `yourdomain.com`). Click **Add**.
-   - Resend shows a list of DNS records (usually 3: MX, TXT/SPF, TXT/DKIM). You must add these at your DNS provider (Cloudflare, Vercel DNS, etc.):
-     - If using **Cloudflare**, log in → select the domain → **DNS** → **Records** → **Add record** for each one. **Turn off the orange cloud (proxy)** for MX and TXT records — they must be DNS-only.
-     - If using **Vercel DNS**, go to the project → **Settings** → **Domains** → the domain → **Add record** for each.
-   - Back in Resend, click **Verify DNS Records**. Wait up to 10 minutes for propagation. When all three show green, the domain is verified.
-5. Update `FROM_EMAIL` in `.env.local` to a sender at that domain (e.g. `noreply@yourdomain.com`).
+2. Click **Create API Key**. Name it `cli`. Permission: **Full access**. Click **Add**.
+3. Copy the key (starts with `re_`).
+4. Save it to your shell profile so every project picks it up:
+   ```bash
+   # Add to ~/.zshrc or ~/.bashrc
+   export RESEND_API_KEY="<the key you just copied>"
+   ```
+   Reload: `source ~/.zshrc`. Also write the same value into the project's `.env.local`.
+
+**C2. Create the domain via CLI:**
+
+```bash
+DOMAIN="yourdomain.com"   # change this
+resend domains create --name "$DOMAIN" --region us-east-1
+```
+
+The output includes the three DNS records you need (MX, SPF/TXT, DKIM/TXT).
+
+**C3. Write the DNS records — Cloudflare MCP (fully scripted) OR manual fallback:**
+
+If the Cloudflare MCP is connected:
+
+- Look up the zone for `$DOMAIN` via the Cloudflare MCP.
+- For each record returned by step C2, call the Cloudflare MCP to create it:
+  - Disable the orange-cloud proxy on every record — Resend records must be DNS-only.
+  - MX record: priority and target as printed by `resend domains create`.
+  - TXT records (SPF + DKIM): `name` and `content` exactly as printed.
+- Confirm each record was created.
+
+If the Cloudflare MCP is NOT connected (or the domain lives elsewhere):
+
+- **Cloudflare dashboard:** log in → select the domain → **DNS** → **Records** → **Add record** for each. Turn off the orange cloud (proxy) for every record.
+- **Vercel DNS:** project → **Settings** → **Domains** → the domain → **Add record** for each.
+- **Other registrars (Namecheap, GoDaddy, etc.):** find the DNS / advanced DNS panel and add the records there.
+
+**C4. Verify the domain via CLI:**
+
+```bash
+DOMAIN_ID=$(resend domains list --format json | jq -r ".data[] | select(.name == \"$DOMAIN\") | .id")
+resend domains verify "$DOMAIN_ID"
+```
+
+Verification can take up to 10 minutes for DNS propagation. Re-run the verify command until it returns success.
+
+**C5. Update sender email:**
+
+```bash
+sed -i '' "s|^FROM_EMAIL=.*|FROM_EMAIL=noreply@$DOMAIN|" .env.local
+```
 
 ### D. Upstash Redis — REST URL, REST Token (API-driven if you have a management key)
 
