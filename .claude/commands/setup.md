@@ -133,26 +133,30 @@ If the user skips this step (e.g. not using background jobs yet), remove `@trigg
 
 Print this checklist verbatim to the user. Every step must be specific enough that someone who has never opened these dashboards can follow it exactly. Do NOT say "grab your API key" — tell them where to click.
 
-### A. Clerk — Publishable Key, Secret Key, Webhook Secret, JWT Template for Convex
+### A. Clerk — Publishable Key, Secret Key, Webhook, JWT Template for Convex (Clerk MCP–driven)
 
-1. Go to https://dashboard.clerk.com and sign in (or create an account).
-2. Click **Create application** in the top right. Name it anything. Enable **Email** and **Google** as sign-in methods. Click **Create application**.
-3. On the application dashboard, click **API Keys** in the left sidebar.
-4. Copy the **Publishable key** (starts with `pk_test_`) — paste into `.env.local` as `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`.
-5. Click the eye icon next to **Secret keys** to reveal it. Copy it (starts with `sk_test_`) — paste into `.env.local` as `CLERK_SECRET_KEY`.
-6. **JWT Template for Convex (REQUIRED — Convex auth silently fails without this):**
-   - In the left sidebar, click **JWT Templates**.
-   - Click **New template**. Select the **Convex** preset.
-   - The name must be exactly `convex` — do NOT change it.
-   - Click **Apply changes**.
-   - On the template detail page, copy the **Issuer** URL (looks like `https://<slug>.clerk.accounts.dev`).
-   - In your terminal, run: `npx convex env set CLERK_JWT_ISSUER_DOMAIN <issuer-url>` — this is what `convex/auth.config.ts` reads. Without it, every Convex call thinks the user is anonymous.
-7. **Webhooks:**
-   - In the left sidebar, click **Webhooks**, then click **Add Endpoint**.
-   - **Endpoint URL:** `https://<your-domain>/api/webhooks/clerk` (use your Vercel production URL).
-   - Under **Subscribe to events**, check `user.created`, `user.updated`, and `user.deleted`.
-   - Click **Create**.
-   - On the endpoint detail page, click **Signing Secret** → copy (starts with `whsec_`) → paste into `.env.local` as `CLERK_WEBHOOK_SECRET`.
+If the Clerk MCP is connected, do everything via the MCP. No dashboard clicks.
+
+1. **Create the application** via the Clerk MCP. Name it after the project. Enable **Email** + **Google** sign-in methods.
+2. **Read the publishable + secret keys** from the MCP and write them into `.env.local`:
+   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (starts with `pk_test_`)
+   - `CLERK_SECRET_KEY` (starts with `sk_test_`)
+3. **Create the Convex JWT template** via the MCP. Template name must be exactly `convex` (not `Convex`, not anything else — `convex/auth.config.ts` looks for that exact name). Read the issuer URL from the MCP response and run:
+   ```bash
+   npx convex env set CLERK_JWT_ISSUER_DOMAIN <issuer-url>
+   ```
+   Without `CLERK_JWT_ISSUER_DOMAIN` set in Convex, `ctx.auth.getUserIdentity()` silently returns `null`.
+4. **Create the webhook endpoint** via the MCP:
+   - URL: `https://<your-vercel-domain>/api/webhooks/clerk`
+   - Events: `user.created`, `user.updated`, `user.deleted`
+   - Read the signing secret from the MCP response → `.env.local` as `CLERK_WEBHOOK_SECRET`.
+
+**Fallback if Clerk MCP is not connected:**
+
+1. https://dashboard.clerk.com → **Create application** → enable Email + Google.
+2. **API Keys** in sidebar → copy **Publishable key** (`pk_test_…`) and **Secret key** (`sk_test_…`) into `.env.local`.
+3. **JWT Templates** → **New template** → **Convex** preset → name must be `convex` → **Apply changes** → copy **Issuer** URL → run `npx convex env set CLERK_JWT_ISSUER_DOMAIN <issuer-url>`.
+4. **Webhooks** → **Add Endpoint** → URL `https://<your-domain>/api/webhooks/clerk` → check `user.created`, `user.updated`, `user.deleted` → **Create** → copy **Signing Secret** (`whsec_…`) into `.env.local` as `CLERK_WEBHOOK_SECRET`.
 
 ### B. Stripe — Publishable Key, Secret Key, Products, Webhook (mostly CLI-driven)
 
@@ -217,58 +221,39 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 The command prints a different `whsec_…` for local — use that in `.env.local` during dev, and swap in the production `whsec_…` when deploying.
 
-### C. Resend — API Key + Verified Domain (mostly CLI-driven)
+### C. Resend — API Key + Verified Domain (Resend MCP–driven)
 
-Install the Resend CLI once: `npm i -g resend-cli` (or use `npx resend-cli@latest`).
+If the Resend MCP is connected, do everything through it. No CLI install, no dashboard.
 
-**C1. Get the bootstrap API key (only dashboard step):**
+1. **Create a project-scoped API key** via the Resend MCP. Name it after the project. Write the returned key (`re_…`) into `.env.local` as `RESEND_API_KEY`.
+2. **Create the domain** via the Resend MCP. Use the user's chosen domain (e.g. `yourdomain.com`), region `us-east-1`. Capture the returned DNS records (MX, SPF/TXT, DKIM/TXT) — you'll need them in step 3.
+3. **Write the DNS records:**
+   - **If the Cloudflare MCP is connected** — for each record returned in step 2, call Cloudflare MCP to create it. Disable the orange-cloud proxy on every record (Resend records must be DNS-only). MX gets priority + target as printed; TXT records get the exact `name` and `content` as printed.
+   - **If Cloudflare MCP is NOT connected** — print the records to the user with click-by-click fallback instructions (Cloudflare dashboard → DNS → Records → Add for each; or Vercel DNS; or registrar's DNS panel).
+4. **Verify the domain** via the Resend MCP. Verification can take up to 10 minutes for DNS propagation — retry the verify call until it returns success.
 
-The first API key has to come from the dashboard — the CLI itself needs an API key to authenticate.
+**Fallback if Resend MCP is not connected — CLI-driven:**
 
-1. Go to https://resend.com/api-keys and sign in.
-2. Click **Create API Key**. Name it `cli`. Permission: **Full access**. Click **Add**.
-3. Copy the key (starts with `re_`).
-4. Save it to your shell profile so every project picks it up:
+Install the Resend CLI: `npm i -g resend-cli` (or `npx resend-cli@latest`).
+
+1. **Bootstrap API key (one-time, dashboard):** https://resend.com/api-keys → **Create API Key** → name it `cli` → **Full access** → copy (`re_…`).
+2. Save to shell profile so every project picks it up:
    ```bash
    # Add to ~/.zshrc or ~/.bashrc
    export RESEND_API_KEY="<the key you just copied>"
    ```
-   Reload: `source ~/.zshrc`. Also write the same value into the project's `.env.local`.
-
-**C2. Create the domain via CLI:**
-
-```bash
-DOMAIN="yourdomain.com"   # change this
-resend domains create --name "$DOMAIN" --region us-east-1
-```
-
-The output includes the three DNS records you need (MX, SPF/TXT, DKIM/TXT).
-
-**C3. Write the DNS records — Cloudflare MCP (fully scripted) OR manual fallback:**
-
-If the Cloudflare MCP is connected:
-
-- Look up the zone for `$DOMAIN` via the Cloudflare MCP.
-- For each record returned by step C2, call the Cloudflare MCP to create it:
-  - Disable the orange-cloud proxy on every record — Resend records must be DNS-only.
-  - MX record: priority and target as printed by `resend domains create`.
-  - TXT records (SPF + DKIM): `name` and `content` exactly as printed.
-- Confirm each record was created.
-
-If the Cloudflare MCP is NOT connected (or the domain lives elsewhere):
-
-- **Cloudflare dashboard:** log in → select the domain → **DNS** → **Records** → **Add record** for each. Turn off the orange cloud (proxy) for every record.
-- **Vercel DNS:** project → **Settings** → **Domains** → the domain → **Add record** for each.
-- **Other registrars (Namecheap, GoDaddy, etc.):** find the DNS / advanced DNS panel and add the records there.
-
-**C4. Verify the domain via CLI:**
-
-```bash
-DOMAIN_ID=$(resend domains list --format json | jq -r ".data[] | select(.name == \"$DOMAIN\") | .id")
-resend domains verify "$DOMAIN_ID"
-```
-
-Verification can take up to 10 minutes for DNS propagation. Re-run the verify command until it returns success.
+   Reload: `source ~/.zshrc`. Also write the same value to the project's `.env.local`.
+3. Create the domain:
+   ```bash
+   DOMAIN="yourdomain.com"
+   resend domains create --name "$DOMAIN" --region us-east-1
+   ```
+4. Add the printed DNS records via Cloudflare MCP if available, otherwise dashboard at your DNS provider.
+5. Verify:
+   ```bash
+   DOMAIN_ID=$(resend domains list --format json | jq -r ".data[] | select(.name == \"$DOMAIN\") | .id")
+   resend domains verify "$DOMAIN_ID"
+   ```
 
 **C5. Update sender email:**
 
