@@ -21,6 +21,10 @@
 - **AutoAnimate:** `@formkit/auto-animate/react` — hook at `hooks/use-auto-animate.ts`. Drop a single ref on a list container to auto-animate add/remove/reorder.
 - **Blend modes:** `components/blend-layer.tsx` — `<BlendLayer mode="difference">` for photo-negative cursors, crisp accent overlays. Keep blended subtrees small (compositor cost).
 - **Smooth Scroll:** `lenis` — wired globally via `components/smooth-scroll.tsx` inside `Providers`. Opt-out a region with `data-lenis-prevent` on the scroll container.
+- **Forms:** `react-hook-form` + `zod` (via `@hookform/resolvers/zod`). Always use Zod schemas for form validation, never hand-rolled. Wire via shadcn's `<Form>` primitives (`npx shadcn@latest add form`).
+- **Toasts:** `sonner` via `<Toaster>` mounted in `components/providers.tsx`. Import `import { toast } from 'sonner'` and call `toast.success(...)` / `toast.error(...)` / `toast.promise(...)`. Never use `alert()`, never hand-roll a toast component.
+- **Theme toggle:** `next-themes` wired in `components/providers.tsx` (`attribute="data-theme"`, system default). UI component at `components/theme-toggle.tsx`. Don't touch `data-theme` directly — always go through `useTheme()` from `next-themes`.
+- **Env validation:** `lib/env.ts` parses `process.env` through a Zod schema at module load. Import from `@/lib/env` instead of reading `process.env.X` directly — you get typed access plus build-time errors for missing required vars. Add new env vars to BOTH `.env.example` AND the schema in `lib/env.ts`.
 - **Utilities:** `cn()` from `lib/utils.ts`, typed errors in `lib/errors.ts`, SEO in `lib/metadata.ts`
 - **Hooks:** `useUser()` from `hooks/use-user.ts` — combined Clerk + Convex + subscription
 
@@ -170,6 +174,18 @@ Then, **without prompting the user**:
 The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
 
 Treat `DESIGN.md` as the design bible once written — every UI decision should trace back to it. **Do NOT write any UI code until `DESIGN.md` is in the repo.**
+
+### Using DESIGN.md (mandatory before every UI change)
+
+Before generating, editing, or refactoring ANY UI — components, pages, layout, color, typography, motion, anything visual — you MUST:
+
+1. Read `DESIGN.md` from the repo root if you haven't already in this session.
+2. Cross-check the proposed change against the rules in `DESIGN.md` (color palette, type scale, spacing scale, radii, motion vocabulary, density, anti-patterns).
+3. If the user asks for something that contradicts `DESIGN.md`, flag the conflict — don't silently override the design system.
+
+This applies to fresh components, shadcn/ui customizations, theme tweaks, animation choices, and copy tone. The whole point of `DESIGN.md` is that it makes UI decisions consistent across the app — bypassing it means you're back to generic AI-template aesthetics.
+
+If `DESIGN.md` doesn't exist yet, run the design-theme step from `/setup` (or fetch one manually from `https://github.com/VoltAgent/awesome-design-md`) before writing UI.
 
 ## MCP servers and CLIs — USE THEM, DON'T ASK
 
