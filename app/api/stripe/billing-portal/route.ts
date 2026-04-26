@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ConvexHttpClient } from 'convex/browser'
+import { z } from 'zod'
 import { api } from '@/convex/_generated/api'
 import { createBillingPortalSession, isStripeConfigured } from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+
+const portalBodySchema = z
+  .object({ returnUrl: z.string().url().optional() })
+  .partial()
+  .optional()
 
 export async function POST(req: Request) {
   if (!isStripeConfigured()) {
@@ -29,7 +35,14 @@ export async function POST(req: Request) {
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const { returnUrl } = await req.json().catch(() => ({ returnUrl: null }))
+  const parsed = portalBodySchema.safeParse(await req.json().catch(() => ({})))
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid request body', issues: parsed.error.issues },
+      { status: 400 },
+    )
+  }
+  const returnUrl = parsed.data?.returnUrl ?? null
 
   const subscription = await convex.query(api.subscriptions.getSubscriptionByClerkId, {
     clerkId: userId,

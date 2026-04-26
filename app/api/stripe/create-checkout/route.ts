@@ -1,11 +1,18 @@
 import { NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import { ConvexHttpClient } from 'convex/browser'
+import { z } from 'zod'
 import { api } from '@/convex/_generated/api'
 import { createCheckoutSession, createStripeCustomer, isStripeConfigured } from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+
+const checkoutBodySchema = z.object({
+  priceId: z.string().startsWith('price_').min(1),
+  successUrl: z.string().url().optional(),
+  cancelUrl: z.string().url().optional(),
+})
 
 export async function POST(req: Request) {
   if (!isStripeConfigured()) {
@@ -28,10 +35,14 @@ export async function POST(req: Request) {
     )
   }
 
-  const { priceId, successUrl, cancelUrl } = await req.json()
-  if (!priceId) {
-    return NextResponse.json({ error: 'Missing priceId' }, { status: 400 })
+  const parsed = checkoutBodySchema.safeParse(await req.json().catch(() => null))
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: 'Invalid request body', issues: parsed.error.issues },
+      { status: 400 },
+    )
   }
+  const { priceId, successUrl, cancelUrl } = parsed.data
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const user = await currentUser()
