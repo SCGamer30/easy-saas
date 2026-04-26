@@ -8,7 +8,31 @@ import SubscriptionCanceledEmail, {
 } from '@/emails/subscription-canceled'
 import TransactionalEmail, { type TransactionalEmailProps } from '@/emails/transactional'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Lazy-init so a missing RESEND_API_KEY doesn't crash module loads at
+// build time. Helpers throw `ResendNotConfiguredError` only when actually
+// called without a key — never at import.
+export class ResendNotConfiguredError extends Error {
+  constructor() {
+    super(
+      'Resend is not configured for this project. Set RESEND_API_KEY in .env.local — run /setup or grab a key from https://resend.com/api-keys.',
+    )
+    this.name = 'ResendNotConfiguredError'
+  }
+}
+
+let _resend: Resend | null = null
+
+export function isResendConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY)
+}
+
+function getResend(): Resend {
+  if (_resend) return _resend
+  const key = process.env.RESEND_API_KEY
+  if (!key) throw new ResendNotConfiguredError()
+  _resend = new Resend(key)
+  return _resend
+}
 
 const FROM_EMAIL = process.env.FROM_EMAIL ?? 'noreply@yourdomain.com'
 
@@ -25,7 +49,7 @@ async function send({
   subject,
   react,
 }: SendOptions & { subject: string; react: React.ReactElement }) {
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: from ?? FROM_EMAIL,
     to,
     subject,
@@ -45,7 +69,7 @@ export async function sendEmail({
   from,
   replyTo,
 }: SendOptions & { subject: string; html: string }) {
-  const { data, error } = await resend.emails.send({
+  const { data, error } = await getResend().emails.send({
     from: from ?? FROM_EMAIL,
     to,
     subject,
