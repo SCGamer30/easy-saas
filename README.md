@@ -194,7 +194,7 @@ You're free to use, modify, distribute, and build commercial products on top of 
 
 1. **Keep the `LICENSE` and `NOTICE` files** in any distribution (source or binary).
 2. **Credit the original author** somewhere visible — README, "About" page, credits screen, footer. Suggested attribution:
-   > *Built on Easy SaaS Boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas-boilerplate*
+   > *Built on Easy SaaS Boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas*
 
 That's it. Ship whatever you want.
 

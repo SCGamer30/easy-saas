@@ -37,19 +37,20 @@ GITHUB_USER="scgamer30"
 PROJECTS_DIR="$HOME/Documents/GitHub"
 TARGET_DIR="$PROJECTS_DIR/$PROJECT_NAME"
 
-# Clone boilerplate into new folder
-echo "Cloning boilerplate into $TARGET_DIR..."
-git clone "https://github.com/$GITHUB_USER/boilerplate.git" "$TARGET_DIR"
+# Clone Easy SaaS boilerplate into new folder
+echo "Cloning Easy SaaS into $TARGET_DIR..."
+git clone "https://github.com/$GITHUB_USER/easy-saas.git" "$TARGET_DIR"
 cd "$TARGET_DIR"
 
 # Remove boilerplate remote
 git remote remove origin
 
 # Update package.json name
+sed -i '' "s/\"name\": \"easy-saas\"/\"name\": \"$PROJECT_NAME\"/" package.json
 sed -i '' "s/\"name\": \"boilerplate\"/\"name\": \"$PROJECT_NAME\"/" package.json
 
-# Update CLAUDE.md title
-sed -i '' "s/# Boilerplate — Claude Context/# $PROJECT_NAME — Claude Context/" CLAUDE.md
+# Update AGENTS.md title (CLAUDE.md is a symlink, so updating AGENTS.md updates both)
+sed -i '' "s/# Project Context for AI Agents/# $PROJECT_NAME — Project Context for AI Agents/" AGENTS.md
 
 # Copy env example
 cp .env.example .env.local
