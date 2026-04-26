@@ -14,7 +14,7 @@
 - **Styling:** Tailwind CSS v4 (`@tailwindcss/postcss`) — NO `tailwind.config.ts`, config lives in `app/globals.css`
 - **UI Components:** shadcn/ui (add via `npx shadcn@latest add <component>`) — base Skeleton at `components/ui/skeleton.tsx`
 - **Icons:** `@phosphor-icons/react` exclusively — no lucide, no heroicons, no emoji
-- **Motion:** `framer-motion` (primary), `gsap` + `ScrollTrigger` (scroll-driven timelines), `animejs` (SVG/DOM keyframes) — import GSAP/Anime from `lib/gsap.ts` / `lib/anime.ts`, never directly. Page transitions: `components/page-transition.tsx` (Framer + AnimatePresence, App Router–native) or `components/barba-transition.tsx` (Barba.js, opt-in for non-RSC subsites).
+- **Motion:** `framer-motion` (primary, React-declarative) and `gsap` + `ScrollTrigger` (imperative timelines, scroll-driven). Import GSAP from `lib/gsap.ts`, never directly. Page transitions: `components/page-transition.tsx` (Framer + AnimatePresence, App Router–native).
 - **WebGL:** `three` + `@react-three/fiber` + `@react-three/drei` — wrapper at `components/webgl-scene.tsx`. Always import via `next/dynamic({ ssr: false })` to keep three.js out of the initial bundle.
 - **Rive:** `@rive-app/react-canvas` — wrapper at `components/rive-scene.tsx`. Use for interactive/stateful animations with input-driven state machines.
 - **Lottie:** `@lottiefiles/dotlottie-react` — wrapper at `components/lottie-player.tsx`. Use for designer-exported playback animations (.lottie format preferred over legacy .json).
@@ -117,8 +117,7 @@ Four animation tools are available. Pick the right one per use case, don't reach
 | Component entrance, hover, layout animations | **Framer Motion** | Declarative, React-native, spring physics built-in |
 | Scroll-driven sequences (pin, parallax, story scroll) | **GSAP + ScrollTrigger** | Timelines with labels, scrubbing, snap — nothing else comes close |
 | Route transitions (App Router) | `components/page-transition.tsx` | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe |
-| Full-takeover page transitions on a marketing subsite | `components/barba-transition.tsx` | Barba.js — only for `<a>`-driven subsites, NOT App Router proper |
-| SVG path morphing, stroke-dash, staggered DOM keyframes | **Anime.js** | Lighter than GSAP for simple keyframe-style work outside React |
+| SVG path morphing, stroke-dash | **GSAP** | Use the same GSAP install — no separate library needed |
 | Hero 3D, shader backgrounds, GPU-driven visuals | `components/webgl-scene.tsx` (react-three-fiber) | Dynamic-imported, lazy-loaded, drei helpers included |
 | Designer-exported playback animation (empty state, hero illustration, success confetti) | `components/lottie-player.tsx` (dotLottie) | Designer owns the animation, you embed the `.lottie` file |
 | Interactive, input-driven animation (mascots, illustrated toggles, scrubbable characters) | `components/rive-scene.tsx` (Rive) | State machines respond to pointer/scroll/app state in real time |

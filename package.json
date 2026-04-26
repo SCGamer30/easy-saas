@@ -15,7 +15,6 @@
     "email:dev": "email dev --dir emails --port 3001"
   },
   "dependencies": {
-    "@barba/core": "^2.10.3",
     "@clerk/nextjs": "^6.12.0",
     "@formkit/auto-animate": "^0.9.0",
     "@hookform/resolvers": "^5.2.2",
@@ -30,7 +29,6 @@
     "@trigger.dev/sdk": "^4.4.4",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.37.0",
-    "animejs": "^4.3.6",
     "clsx": "^2.1.1",
     "convex": "^1.19.0",
     "framer-motion": "^11.18.0",

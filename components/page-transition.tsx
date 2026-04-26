@@ -12,10 +12,9 @@
 //     </Providers>
 //   </body>
 //
-// For Barba.js-style effects (full-page takeover transitions, multi-layer
-// reveals), use `components/barba-transition.tsx` instead — it ships with
-// Barba's DOM manipulation model and is intended for marketing subsites or
-// standalone pages that are OK opting out of React routing.
+// For more elaborate full-page transitions (multi-layer reveals, masks, etc.)
+// drive the animation with GSAP timelines inside the motion variants — there's
+// no need for a separate page-transition library on App Router.
 
 import { AnimatePresence, motion } from 'framer-motion'
 import { usePathname } from 'next/navigation'

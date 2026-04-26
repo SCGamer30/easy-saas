@@ -95,7 +95,7 @@ npm run format       # Prettier
 - **Rate limiting** — Upstash Redis
 - **Background jobs** — Trigger.dev
 - **Styling** — Tailwind CSS v4 + shadcn/ui + Phosphor Icons
-- **Motion** — Framer Motion + GSAP + Anime.js + Barba.js + Lenis
+- **Motion** — Framer Motion + GSAP + Lenis
 - **Visual** — three.js + R3F + drei (WebGL), Rive, Lottie, AutoAnimate, mix-blend-mode utility
 - **Quality of life** — Security headers, SEO metadata, sitemap, robots, OG image, 404 page, loading skeleton, GitHub Actions CI (lint + typecheck), error boundaries, MIT license
 
