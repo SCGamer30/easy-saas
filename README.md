@@ -188,8 +188,14 @@ trigger/                # Trigger.dev background jobs
 
 ## License
 
-**Proprietary — All Rights Reserved.** See [LICENSE](./LICENSE).
+**Apache License 2.0.** See [LICENSE](./LICENSE) and [NOTICE](./NOTICE).
 
-Only the author may use this freely. Any other use requires prior written permission and prominent attribution: *"Built on Easy SaaS by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas"*.
+You're free to use, modify, distribute, and build commercial products on top of this — no permission needed. Two requirements:
 
-For licensing inquiries: shauryachowdhri@gmail.com
+1. **Keep the `LICENSE` and `NOTICE` files** in any distribution (source or binary).
+2. **Credit the original author** somewhere visible — README, "About" page, credits screen, footer. Suggested attribution:
+   > *Built on Easy SaaS Boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas-boilerplate*
+
+That's it. Ship whatever you want.
+
+For questions: shauryachowdhri@gmail.com
