@@ -1,4 +1,4 @@
-# Boilerplate — Codex Context
+# Project Context for AI Agents
 
 ## Stack
 
@@ -21,6 +21,10 @@
 - **AutoAnimate:** `@formkit/auto-animate/react` — hook at `hooks/use-auto-animate.ts`. Drop a single ref on a list container to auto-animate add/remove/reorder.
 - **Blend modes:** `components/blend-layer.tsx` — `<BlendLayer mode="difference">` for photo-negative cursors, crisp accent overlays. Keep blended subtrees small (compositor cost).
 - **Smooth Scroll:** `lenis` — wired globally via `components/smooth-scroll.tsx` inside `Providers`. Opt-out a region with `data-lenis-prevent` on the scroll container.
+- **Forms:** `react-hook-form` + `zod` (via `@hookform/resolvers/zod`). Always use Zod schemas for form validation, never hand-rolled. Wire via shadcn's `<Form>` primitives (`npx shadcn@latest add form`).
+- **Toasts:** `sonner` via `<Toaster>` mounted in `components/providers.tsx`. Import `import { toast } from 'sonner'` and call `toast.success(...)` / `toast.error(...)` / `toast.promise(...)`. Never use `alert()`, never hand-roll a toast component.
+- **Theme toggle:** `next-themes` wired in `components/providers.tsx` (`attribute="data-theme"`, system default). UI component at `components/theme-toggle.tsx`. Don't touch `data-theme` directly — always go through `useTheme()` from `next-themes`.
+- **Env validation:** `lib/env.ts` parses `process.env` through a Zod schema at module load. Import from `@/lib/env` instead of reading `process.env.X` directly — you get typed access plus build-time errors for missing required vars. Add new env vars to BOTH `.env.example` AND the schema in `lib/env.ts`.
 - **Utilities:** `cn()` from `lib/utils.ts`, typed errors in `lib/errors.ts`, SEO in `lib/metadata.ts`
 - **Hooks:** `useUser()` from `hooks/use-user.ts` — combined Clerk + Convex + subscription
 
@@ -42,6 +46,17 @@
 - Isolate heavy animations in their own leaf Client Components — never co-locate with data fetching.
 - Use `min-h-[100dvh]` for full-height sections. Never `h-screen`.
 - Use CSS Grid over flex math for layouts.
+
+## Stripe is OPTIONAL — opt-in, not on by default
+
+Most projects don't need payments on day one. The boilerplate ships with `STRIPE_SECRET_KEY` empty, and `lib/stripe.ts` lazy-inits — the app runs fine without it. **Never assume the user wants Stripe** unless they've explicitly said so or set `STRIPE_SECRET_KEY` in `.env.local`.
+
+- `isStripeConfigured()` from `lib/stripe.ts` is the source of truth. `getStripe()` throws `StripeNotConfiguredError` if called when env vars are missing — handle this in any new Stripe-touching route.
+- Existing routes (`/api/stripe/*`) already return `503` with a "run /add-stripe" message when not configured. Follow the same pattern for any new payment-touching code.
+- The webhook handler (`/api/stripe/webhook/route.ts`) returns 200 with `skipped: 'stripe-not-configured'` if env vars are missing — never let it 500.
+- If the user asks for something payment-related and `isStripeConfigured()` returns false, **stop and ask first** whether they want to enable payments now (run `/add-stripe`) or whether they want the feature stubbed without billing.
+
+To enable payments later, the user runs `/add-stripe` — that command provisions products, prices, the webhook, and writes env vars. Until then, leave the Stripe scaffolding alone and don't generate Stripe-dependent code.
 
 ## Stripe — DO NOT CREATE DUPLICATE ROUTES
 
@@ -137,7 +152,7 @@ Use the interview answers as the primary signal, and the project name as a fallb
 
 | Signal in project name / README | Default theme |
 | --- | --- |
-| AI / chat / agent / LLM | Codex |
+| AI / chat / agent / LLM | Claude |
 | Dev tools / CLI / API / SDK | Linear |
 | Payments / billing / fintech | Stripe |
 | Data / analytics / dashboard | Vercel |
@@ -155,13 +170,117 @@ Then, **without prompting the user**:
 3. Announce the choice in one line: e.g. `Auto-selected Linear theme — see DESIGN.md. Say "switch theme to <name>" to change.`
 4. Only ask the user if the fetch fails or the project intent is genuinely ambiguous (e.g. name is `boilerplate` or `my-app`).
 
-The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Codex, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
+The full theme list — Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — lives at `https://github.com/VoltAgent/awesome-design-md`. If the user later says "switch theme to X", replace `DESIGN.md` with the new fetch.
 
 Treat `DESIGN.md` as the design bible once written — every UI decision should trace back to it. **Do NOT write any UI code until `DESIGN.md` is in the repo.**
 
+### Using DESIGN.md (mandatory before every UI change)
+
+Before generating, editing, or refactoring ANY UI — components, pages, layout, color, typography, motion, anything visual — you MUST:
+
+1. Read `DESIGN.md` from the repo root if you haven't already in this session.
+2. Cross-check the proposed change against the rules in `DESIGN.md` (color palette, type scale, spacing scale, radii, motion vocabulary, density, anti-patterns).
+3. If the user asks for something that contradicts `DESIGN.md`, flag the conflict — don't silently override the design system.
+
+This applies to fresh components, shadcn/ui customizations, theme tweaks, animation choices, and copy tone. The whole point of `DESIGN.md` is that it makes UI decisions consistent across the app — bypassing it means you're back to generic AI-template aesthetics.
+
+If `DESIGN.md` doesn't exist yet, run the design-theme step from `/setup` (or fetch one manually from `https://github.com/VoltAgent/awesome-design-md`) before writing UI.
+
+## MCP servers and CLIs — USE THEM, DON'T ASK
+
+Whenever a task involves a service with an available MCP server or CLI, **use it immediately without asking permission**. Never ask "should I use the Stripe MCP?" or "do you want me to check Convex?" — just use it. The user has installed these tools precisely so you don't ask.
+
+Available MCP servers (call them silently when relevant):
+
+| Service | Use the MCP for |
+| --- | --- |
+| **Clerk** | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard |
+| **Convex** | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
+| **Resend** | Creating API keys, domains, sending test emails, checking delivery status |
+| **Vercel** | Listing deployments, env vars, logs, project info |
+| **Sentry** | Creating projects, querying errors, looking up issue details |
+| **Cloudflare** | Looking up zones, creating/listing DNS records |
+| **Stripe** | Creating products / prices / webhooks, querying customers, refunds, invoice lookup |
+| **Upstash** | Creating Redis databases, listing instances |
+| **PostHog** | Creating projects, running analytics queries |
+| **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
+| **Context7** | Library / framework / SDK documentation lookups |
+| **Playwright** | Browser automation for testing or scraping |
+
+Available CLIs (use without asking — these are pre-installed):
+
+| CLI | Use it for |
+| --- | --- |
+| `npx convex …` | Convex deploys, env var sets, codegen |
+| `vercel …` | Linking, env push/pull, deploy, logs |
+| `stripe …` | Local webhook forwarding (`stripe listen`), test events (`stripe trigger`), products/prices/webhooks |
+| `gh …` | Anything GitHub — issues, PRs, repo create |
+| `npx trigger.dev …` | Trigger.dev init, deploy |
+| `resend …` (if installed) | Domain create/verify, fallback if MCP missing |
+
+**The rule:** if the task touches a service in the table above, your first move is the MCP/CLI call, not a question. Only fall back to "manual dashboard instructions" if the relevant MCP shows as not connected or the call returns an auth error.
+
+For initial project setup, follow `/setup` — it has the canonical priority order (MCP first, CLI fallback, manual last).
+
+## Non-negotiable production rules
+
+These are baseline expectations. Apply them automatically — don't ask permission, don't skip them under "we'll add it later" thinking.
+
+### Never expose API keys
+
+- **No secret in client-side code.** Anything starting with `sk_`, `re_`, `tr_`, `whsec_`, etc. is server-only. If you see one in a client component, file, or `NEXT_PUBLIC_*` variable, that's a critical bug — fix it immediately.
+- **No secret in commit history.** Never commit `.env.local`. Never paste a real key into a code comment, test file, or markdown doc. If a key gets committed by accident, rotate it before pushing — git history is forever.
+- **All secrets go through env vars** read in Server Components, Route Handlers, or Convex functions only. Use `lib/env.ts` for typed access — server-only vars throw a runtime error if accessed on the client.
+- **`NEXT_PUBLIC_*` is a public-by-design label.** Anything with that prefix is bundled into the client and visible to every user. Use it for publishable keys (Clerk `pk_*`, Stripe `pk_*`, PostHog project keys) — never for secrets.
+
+### Always validate input
+
+- **Every API route validates its body with Zod.** No raw `req.json()` followed by direct field access. Define a schema, parse, and 400 on failure.
+- **Every form validates with React Hook Form + Zod resolver.** Hand-rolled `useState`-driven validation is banned.
+- **Webhook handlers verify signatures.** Stripe via `stripe.webhooks.constructEvent`, Clerk via `svix`. Convex webhook mutations verify the shared secret. Never trust webhook payloads without verification — anyone with the URL can POST to them.
+- **Auth-gate every authenticated route.** Always call `auth()` from `@clerk/nextjs/server` and 401 if `userId` is null. Don't rely on the middleware alone — it's a backstop, not the only check.
+
+### Rate limiting must actually work
+
+- **Every authenticated route calls `checkRateLimit(kind, userId)`.** AI routes use `'ai'`, email-sending routes use `'email'`, generic API routes use `'api'`.
+- **Anonymous routes key the limiter by IP.** Read `req.headers.get('x-forwarded-for')` or `req.headers.get('x-real-ip')`.
+- **When `success` is false, return 429 with `Retry-After` header.** Don't silently swallow the rate limit.
+- **Rate limiting failing-open is intentional.** When Upstash isn't configured, `checkRateLimit` returns `{ success: true }` so the route still works in dev. Don't treat this as a bug — the configured-vs-unconfigured behavior is documented in `lib/ratelimit.ts`.
+
+### Page loading and reloading must feel instant
+
+- **No layout shift.** Every async-rendered piece needs a skeleton. Use `components/ui/skeleton.tsx` and `app/loading.tsx`.
+- **No FOUC, no FOIT.** Self-host fonts via `next/font` (Geist already wired). Don't use `<link rel="stylesheet">` to a Google Fonts URL.
+- **No render-blocking JS over 200KB.** Heavy dependencies (three.js, Lottie, Rive) MUST be `next/dynamic({ ssr: false })` imported. Don't co-locate them with data fetching.
+- **No reload jankiness.** Route transitions go through `components/page-transition.tsx` (300–400ms fade) — never instant white flash, never multi-second wait.
+- **Defer non-critical work.** Analytics, Sentry breadcrumbs, PostHog events — anything observability-flavored — runs after first paint, never blocks it.
+- **Verify with Lighthouse.** After a major change, the Performance score should stay ≥ 90. If it drops, find what regressed and fix it before shipping.
+
+## Verify UI changes with Playwright (mandatory after any visual change)
+
+After ANY change that affects what the user sees — new component, layout edit, animation tweak, CSS variable change, page transition, anything visual — you MUST verify it with the Playwright MCP before declaring the work done. Don't ship animations or transitions you haven't actually watched run.
+
+Required checks after a UI change:
+
+1. **Page loads cleanly.** Navigate to the affected route, take a snapshot, confirm no console errors (`browser_console_messages`), no broken layout.
+2. **Page transitions feel smooth.** Click between routes you touched. Confirm there's no flash of unstyled content, no abrupt jump cut, no layout shift mid-transition. The Framer `AnimatePresence` route transition should fade/slide in 300–400ms — not instant, not slow.
+3. **Animations don't lag or pop.** Hover, scroll, and interact with any new motion. If a hover scale-up is supposed to feel springy, it should. If a GSAP scroll timeline is supposed to scrub smoothly, it should.
+4. **Reduced-motion is respected.** Toggle `prefers-reduced-motion: reduce` in DevTools (or use `browser_evaluate` to set it) — confirm that decorative motion is muted but functional motion (entrance, focus rings) still works.
+5. **Both light and dark modes look right.** Use `useTheme().setTheme('dark')` or toggle `[data-theme]` on `<html>` and confirm contrast, accent visibility, and shadow rendering all hold up.
+
+If any check fails, fix it before reporting completion. **Don't claim "looks good" without running the browser.**
+
+The Playwright MCP is `mcp__plugin_playwright_playwright__*` — `browser_navigate`, `browser_snapshot`, `browser_take_screenshot`, `browser_click`, `browser_evaluate`, `browser_console_messages`. Use them.
+
+## Documentation Lookups
+
+Use Context7 when I need library/API documentation, code generation, setup or configuration steps without me having to explicitly ask. Trigger automatically whenever the task involves a specific library, framework, SDK, CLI tool, or cloud service — even well-known ones (Next.js, React, Tailwind, Stripe, Convex, Clerk, Resend, etc.). Your training data may be stale; verify against current docs before writing code that touches a third-party API.
+
+Skip Context7 for: refactoring, business logic debugging, code review, general programming concepts.
+
 ## Manual Setup Reminder
 
-The user is not familiar with dashboard navigation. Whenever a manual setup step is required (grabbing an API key, configuring a webhook, creating a domain record, etc.), provide **exact, click-by-click instructions** — specific page names, button labels, and where to find each value. Never say "grab your API key from the dashboard" — always spell it out. The `/setup` slash command at `.Codex/commands/setup.md` is the canonical reference for what manual instructions should look like.
+The user is not familiar with dashboard navigation. Whenever a manual setup step is required (grabbing an API key, configuring a webhook, creating a domain record, etc.), provide **exact, click-by-click instructions** — specific page names, button labels, and where to find each value. Never say "grab your API key from the dashboard" — always spell it out. The `/setup` slash command at `.claude/commands/setup.md` is the canonical reference for what manual instructions should look like.
 
 ## Environment Variables
 
@@ -184,7 +303,7 @@ Copy `.env.example` to `.env.local` and fill in. See `/setup` for exact steps. G
 - VISUAL_DENSITY: 4 — daily app spacing, not cockpit, not gallery
 - No emoji, no Inter, no centered heroes, no 3-equal-card rows, no purple glows
 - Use `@phosphor-icons/react` for all icons
-- Full rules live in `.Codex/commands/design-taste-frontend.md`. Invoke `/design-taste-frontend` for the full spec.
+- Full rules live in `.claude/commands/design-taste-frontend.md`. Invoke `/design-taste-frontend` for the full spec.
 
 ## Adding shadcn Components
 
@@ -225,4 +344,4 @@ npm run lint         # ESLint
 
 ## Bootstrap
 
-New clone? Open Codex in the project directory and run `/setup`. It handles everything automatically and walks you through the remaining manual steps.
+New clone? Open Claude Code in the project directory and run `/setup`. It handles everything automatically and walks you through the remaining manual steps.

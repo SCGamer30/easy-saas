@@ -1,235 +1,195 @@
-# Boilerplate
+# Easy SaaS
 
-A production-ready Next.js 15 SaaS starter that **Claude Code provisions for you**. Clone the boilerplate, run one script, answer four questions in chat, and you have a deployed app with auth, database, email, analytics, error monitoring, rate limiting, and (optionally) payments — all wired up.
+Production-ready Next.js 15 starter for shipping a SaaS in an afternoon. Provisioned by Claude Code — clone, answer four questions, and you have a deployed app with auth, database, email, analytics, error monitoring, and rate limiting wired up.
 
-You can use the whole thing or just the parts you need. Everything is modular, Stripe is opt-in, and every integration is documented in `CLAUDE.md` so future Claude sessions know what to do.
+**Setup time: ~3 minutes.** **Cost to run: $0/month** until real users show up.
 
-## What it does
+---
 
-- **Auth + user data** — Clerk handles sign-in/up, sessions, MFA, and social logins. New users are auto-synced to Convex via webhook.
-- **Realtime database** — Convex with typed queries/mutations and reactive subscriptions out of the box.
-- **Payments (opt-in)** — Stripe Checkout, billing portal, and webhook handlers, gated behind `/add-stripe` so you don't have to think about billing on day one.
-- **Transactional email** — Resend + React Email templates for welcome, subscription confirmed, subscription canceled, and a generic transactional base.
-- **Analytics + product insights** — PostHog with feature flags and session replay.
-- **Error monitoring** — Sentry across client / server / edge with error boundaries and instrumented routes.
-- **Rate limiting** — Upstash Redis sliding-window limiters for API, AI, and email routes.
-- **Background jobs** — Trigger.dev with graceful shutdown and durable retries.
-- **SEO + app shell** — `metadata` API, sitemap, robots, OG image, 404, loading skeleton, custom error pages.
-- **Security headers + CI** — HSTS, X-Frame-Options, CSP-friendly defaults; GitHub Actions runs lint + typecheck on every PR.
-- **Design system** — Auto-picks a theme (Linear, Vercel, Stripe, etc.) based on what you're building, writes a `DESIGN.md` for Claude to follow.
+## Features
 
-## Set it up
+- **Auth + user data** — Clerk + Convex, synced via webhook
+- **Realtime database** — Convex with typed queries and reactive subscriptions
+- **Payments (opt-in)** — Stripe Checkout, billing portal, webhook handlers — disabled until you run `/add-stripe`
+- **AI features (opt-in)** — Vercel AI SDK + OpenRouter — disabled until you run `/add-ai`
+- **Transactional email** — Resend + React Email templates from your own domain
+- **Analytics** — PostHog with feature flags and session replay
+- **Errors** — Sentry across client / server / edge
+- **Rate limiting** — Upstash Redis sliding-window limiters
+- **Background jobs** — Trigger.dev with graceful shutdown
+- **Forms** — React Hook Form + Zod
+- **Toasts + theme** — Sonner + next-themes (light / system / dark)
+- **Motion** — Framer Motion + GSAP + Lenis smooth scroll
+- **Visual** — three.js + R3F + drei for WebGL, Rive for state-machine animations, Lottie for designer playback, AutoAnimate for list reorders
+- **SEO + app shell** — metadata API, sitemap, robots, OG image, 404, loading skeleton, error boundaries
+- **Security headers + CI** — HSTS, X-Frame-Options, GitHub Actions lint + typecheck on every PR
+- **Auto-picked design system** — `/setup` writes a `DESIGN.md` matching your project type (Linear / Vercel / Stripe / Apple / etc.)
 
-### Prerequisites (one-time install)
+---
+
+## $0 until you scale
+
+Every service has a free tier large enough to launch and acquire your first thousand users without paying anything. Total monthly cost from clone to first paying customer: **$0**.
+
+| Service | Free tier | Outgrown around |
+| --- | --- | --- |
+| **Vercel** (hosting) | 100 GB bandwidth | 10k–50k visitors/mo |
+| **Clerk** (auth) | 10,000 MAU | 10k MAU → $25/mo |
+| **Convex** (database) | 1M function calls, 1 GB | Months of early-stage traffic |
+| **Resend** (email) | 3,000 emails/month | 3k → $20/mo for 50k |
+| **PostHog** (analytics) | 1M events/month | Most products take a long time to hit 1M |
+| **Sentry** (errors) | 5,000 errors/month | Only matters at high error rates |
+| **Upstash** (Redis) | 10,000 commands/day | Plenty for rate limiting |
+| **Trigger.dev** (jobs) | 5,000 runs/month | Most apps run <5k/month early on |
+| **Stripe** (payments) | No monthly fee | 2.9% + 30¢ per charge — pay only when you earn |
+| **Total** | **$0/month** | |
+
+When you do outgrow a tier, every service is $20–30/mo at the next step and scales linearly. No seat-based pricing, no enterprise sales gates.
+
+---
+
+## Quick start
+
+### Prerequisites (one-time)
 
 ```bash
 brew install gh                                # GitHub CLI
-brew install stripe/stripe-cli/stripe          # Stripe CLI (only if you'll use payments)
+brew install stripe/stripe-cli/stripe          # only if you'll use payments
 npm i -g vercel                                # Vercel CLI
 ```
 
-You'll also need:
+You'll also need [Node.js 20+](https://nodejs.org) and [Claude Code](https://claude.com/claude-code).
 
-- **Node.js 20+** ([nodejs.org](https://nodejs.org))
-- **[Claude Code](https://claude.com/claude-code)** — runs the `/setup` command and the MCP servers
-
-### Create a new project
-
-From this boilerplate directory:
+### Create a project
 
 ```bash
-cd ~/Documents/GitHub/boilerplate
+cd ~/Documents/GitHub/easy-saas
 ./new-project.sh my-app
 cd ~/Documents/GitHub/my-app
 claude
 ```
 
-Then inside Claude Code:
+Inside Claude Code:
 
 ```
 /setup
 ```
 
-`/setup` will ask you four questions:
+Answer four questions — what you're building, who it's for, brand preference, payments now or later — and Claude provisions everything. From clone to running locally: about three minutes.
 
-1. **What are you building?** (one sentence)
-2. **Who is it for?** (audience)
-3. **Brand / aesthetic preference?** (or "you pick")
-4. **Payments now or later?** (default: **later**)
-
-Then it provisions everything via CLIs and MCP servers (see "How automation works" below). Total time from `./new-project.sh` to "I'm building features" is about three minutes.
-
-### Run it locally
-
-After `/setup` finishes:
+### Run it
 
 ```bash
 npm run dev          # Next.js on http://localhost:3000
-npm run convex:dev   # Convex dev server (second terminal)
+npm run convex:dev   # Convex (second terminal)
 npm run email:dev    # React Email preview on http://localhost:3001
 ```
 
-If you enabled Stripe via `/add-stripe`, also run:
+---
 
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook   # third terminal
-```
-
-Other scripts:
-
-```bash
-npm run build        # production build
-npm run lint         # ESLint
-npm run format       # Prettier
-```
-
-## Technologies
-
-- **Framework** — Next.js 15 (App Router, React 19, TypeScript strict)
-- **Auth** — Clerk
-- **Database** — Convex (realtime, typed, RSC-safe)
-- **Payments** — Stripe (opt-in via `/add-stripe`)
-- **Email** — Resend + React Email templates
-- **Analytics** — PostHog
-- **Error monitoring** — Sentry (client + server + edge)
-- **Rate limiting** — Upstash Redis
-- **Background jobs** — Trigger.dev
-- **Styling** — Tailwind CSS v4 + shadcn/ui + Phosphor Icons
-- **Motion** — Framer Motion + GSAP + Lenis
-- **Visual** — three.js + R3F + drei (WebGL), Rive, Lottie, AutoAnimate, mix-blend-mode utility
-- **Quality of life** — Security headers, SEO metadata, sitemap, robots, OG image, 404 page, loading skeleton, GitHub Actions CI (lint + typecheck), error boundaries, MIT license
-
-## How automation works
-
-This boilerplate is unusual — it's designed to be provisioned through Claude Code, not by hand. The `/setup` slash command provisions everything via CLIs and MCP servers.
-
-### What gets automated
-
-| Service | How it's provisioned |
-| --- | --- |
-| **Convex** | `npx convex dev` (CLI) — creates the deployment, sets env vars |
-| **Vercel** | `vercel link` + `vercel env pull` (CLI) — links the project, pulls env |
-| **Clerk** | Clerk MCP — creates the application, JWT template, webhook |
-| **Resend** | Resend MCP — creates API key, domain, verifies it |
-| **Sentry** | Sentry MCP — creates the project, grabs DSN |
-| **Cloudflare DNS** | Cloudflare MCP — writes DNS records (Vercel CNAME + Resend MX/SPF/DKIM) |
-| **Upstash Redis** | Upstash MCP — creates the database, returns REST URL/token |
-| **PostHog** | PostHog MCP — creates the project, returns API key |
-| **Stripe** | Stripe MCP / CLI — creates products, prices, webhook (only when you run `/add-stripe`) |
-| **Trigger.dev** | `npx trigger.dev init` (CLI) |
-| **GitHub** | `gh` CLI — creates the repo, pushes initial commit |
-| **Design theme** | `curl` from VoltAgent's awesome-design-md, written to `DESIGN.md` |
-
-After all that runs, the only manual step is grabbing **Stripe API keys** (and only if you opted into payments) — Stripe doesn't expose secret keys via API. Two values from the Stripe dashboard. That's it.
-
-### Install the MCP servers (recommended — once, reused for every project)
-
-These are the magic. Install whichever you want — `/setup` works with whatever subset you have, and falls back to manual instructions for any service whose MCP isn't connected.
-
-**Highly recommended (covers ~90% of automation):**
-
-| MCP | Install | What it does |
-| --- | --- | --- |
-| **Clerk** | https://github.com/clerk/mcp-server | Provisions auth apps + webhooks |
-| **Convex** | https://docs.convex.dev/ai/mcp | Inspects data, debugs functions |
-| **Resend** | https://resend.com/docs/mcp | API keys + domain creation/verify |
-| **Vercel** | Built-in via Claude Code plugin marketplace | Deployments, env vars, logs |
-| **Sentry** | claude.ai connector | Project creation + DSN |
-| **Cloudflare** | claude.ai connector | DNS records for Vercel + Resend |
-
-**Nice to have:**
-
-| MCP | Install | What it does |
-| --- | --- | --- |
-| **Stripe** | https://github.com/stripe/agent-toolkit | Manage products / refunds / webhooks |
-| **Upstash** | https://github.com/upstash/mcp-server | Create Redis DBs |
-| **PostHog** | https://posthog.com/docs/ai-engineering/mcp | Create projects + run analytics queries |
-| **Context7** | `npx ctx7` | Up-to-date library docs (Claude uses automatically) |
-| **Playwright** | Built-in | Browser automation for e2e tests |
-
-For each MCP, follow the linked docs to add it to `~/.claude.json`. Restart Claude Code, then run `/mcp` to confirm `connected`.
-
-### Slash commands
+## Slash commands
 
 | Command | What it does |
 | --- | --- |
-| `/setup` | Full project provisioning (auth, DB, email, analytics, errors, rate limit, jobs) |
-| `/add-stripe` | Enable payments on a project that scaffolded without them |
-| `/design-taste-frontend` | Senior UI/UX rules — design tokens, motion intensity, density, anti-patterns |
+| `/setup` | Provisions auth, DB, email, analytics, errors, rate limit, jobs, design theme |
+| `/add-stripe` | Enables payments on a project that scaffolded without them |
+| `/add-ai` | Wires Vercel AI SDK + OpenRouter for chat/generation/agents |
+| `/design-taste-frontend` | Senior UI/UX rules — design tokens, motion, density, anti-patterns |
 
-## Buying a domain
+---
 
-You bring your own domain — the boilerplate just configures it. Recommended pattern:
+## How automation works
 
-1. **Buy at [Porkbun](https://porkbun.com)** — typically the cheapest registrar (`.com` ≈ $11/yr, no upsell BS, no renewal-price hikes).
-2. **Point Porkbun's nameservers to Cloudflare** (free) — in Porkbun: Domain Management → your domain → **Authoritative Nameservers** → set to `<your-zone>.ns.cloudflare.com`. In Cloudflare: add the site, copy the nameservers it gives you back to Porkbun.
-3. **Manage DNS in Cloudflare from then on.** The Cloudflare MCP wired into `/setup` and `/add-stripe` will write the records (Vercel CNAME, Resend MX/SPF/DKIM, etc.) automatically.
+`/setup` provisions services through a mix of CLIs and MCP servers. You install the MCPs once for your account; they're reused across every project you scaffold from this boilerplate.
 
-Why not just use Porkbun's DNS directly? Porkbun's DNS is fine, but Cloudflare's is faster, has a generous free tier, and there's an MCP — so the boilerplate can write your records for you. Other registrars (Namecheap, Cloudflare Registrar, Squarespace Domains) work the same way as long as you point nameservers at Cloudflare.
+| Service | Provisioned via |
+| --- | --- |
+| Convex | `npx convex dev` (CLI) |
+| Vercel | `vercel link` (CLI) |
+| Clerk | Clerk MCP — creates app, JWT template, webhook |
+| Resend | Resend MCP — creates API key, domain, verifies it |
+| Cloudflare DNS | Cloudflare MCP — writes Vercel CNAME + Resend MX/SPF/DKIM |
+| Sentry | Sentry MCP — creates project, returns DSN |
+| Upstash | Upstash MCP — creates Redis DB |
+| PostHog | PostHog MCP — creates project, returns API key |
+| Stripe | Stripe MCP / CLI (only on `/add-stripe`) |
+| Trigger.dev | `npx trigger.dev init` (CLI) |
+| GitHub | `gh` CLI — creates repo, pushes initial commit |
+| Design theme | `curl` from VoltAgent's awesome-design-md → `DESIGN.md` |
 
-After your domain is wired into Cloudflare, `/setup` handles the rest:
+After all that, the only manual click left is grabbing two **Stripe API keys** from the dashboard — and only if you opted into payments. Stripe doesn't expose secret keys via API, by design.
 
-- Adds the Vercel CNAME for your apex/www
-- Creates and verifies the Resend domain (so your emails come from `hello@yourdomain.com`)
-- Sets `FROM_EMAIL` in `.env.local` to a sender at your domain
+### Recommended MCP servers
 
-Change `FROM_EMAIL` to whatever you want — `hello@`, `team@`, `noreply@`, etc. The React Email templates respect it automatically.
+Install whichever you want — `/setup` works with whatever subset you have and falls back to manual instructions for anything missing. Each MCP is a one-time install in `~/.claude.json`; reused across every project.
+
+| MCP | Where to find install instructions |
+| --- | --- |
+| Clerk | [clerk.com/docs/mcp](https://clerk.com/docs/mcp) |
+| Convex | [docs.convex.dev/ai/mcp](https://docs.convex.dev/ai/mcp) |
+| Resend | [resend.com/docs/mcp](https://resend.com/docs/mcp) |
+| Vercel | [vercel.com/docs/mcp](https://vercel.com/docs/mcp) (built into Claude Code) |
+| Sentry | [docs.sentry.io/product/sentry-mcp](https://docs.sentry.io/product/sentry-mcp/) |
+| Cloudflare | [developers.cloudflare.com/agents/model-context-protocol](https://developers.cloudflare.com/agents/model-context-protocol/) |
+| Stripe | [docs.stripe.com/mcp](https://docs.stripe.com/mcp) |
+| Upstash | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server) |
+| PostHog | [posthog.com/docs/llm-observability/mcp](https://posthog.com/docs/llm-observability/mcp) |
+| Context7 | `npx ctx7` (auto-config) |
+| Playwright | Built into Claude Code |
+
+MCP install patterns evolve quickly — always follow the provider's official docs above for the current command. The boilerplate doesn't hardcode any of them.
+
+---
+
+## Buy your domain at Porkbun, manage DNS at Cloudflare
+
+`.com` for ~$11/yr at [Porkbun](https://porkbun.com), nameservers pointed to Cloudflare. The Cloudflare MCP wired into `/setup` and `/add-stripe` writes every record you need automatically (Vercel CNAME, Resend MX/SPF/DKIM). After this one-time setup, you never touch DNS again.
+
+The boilerplate already configures custom-domain email — change `FROM_EMAIL` in `.env.local` to `hello@yourdomain.com`, `team@`, whatever — every Resend email respects it.
+
+---
 
 ## Use it modular or full-stack
 
-You don't have to use everything. Common patterns:
+You don't need everything. Common patterns:
 
-- **Marketing site / portfolio** — keep Next.js, Tailwind, Framer Motion, GSAP, WebGL, Sentry, PostHog, SEO. Delete `convex/`, `app/sign-in/`, `app/sign-up/`, `app/api/stripe/`, `app/api/webhooks/clerk/`, `middleware.ts`, `hooks/use-user.ts`, `lib/stripe.ts`. About 5 minutes of pruning.
-- **SaaS without payments yet** — answer "later" to the payments question in `/setup`. Stripe scaffolding stays in place but stays dormant. Run `/add-stripe` when you're ready to monetize.
-- **Full SaaS with payments on day one** — answer "now" to the payments question. Everything wires up.
-- **Just the design system** — copy `app/globals.css`, `components/ui/`, the icon/motion conventions from `CLAUDE.md`. Skip everything else.
+- **Marketing site** — keep Next.js, Tailwind, motion stack, SEO, analytics. Delete `convex/`, `app/sign-in/`, `app/api/stripe/`, `middleware.ts`. ~5 minutes of pruning.
+- **SaaS without payments yet** — answer "later" to `/setup`'s payment question. Stripe scaffolding stays dormant until `/add-stripe`.
+- **Full SaaS** — answer "now". Everything wires up in one shot.
+
+---
 
 ## Project layout
 
 ```
 app/                    # Next.js App Router pages + API routes
-  api/stripe/           # checkout, billing portal, webhook (opt-in)
-  api/webhooks/clerk/   # Clerk user sync
-.claude/commands/       # /setup, /add-stripe, /design-taste-frontend
+.claude/commands/       # /setup, /add-stripe, /add-ai, /design-taste-frontend
 components/             # React components (shadcn/ui in components/ui/)
 convex/                 # Convex schema, queries, mutations
 emails/                 # React Email templates
-hooks/                  # useUser() hook (Clerk + Convex + subscription)
-lib/                    # stripe, resend, ratelimit, errors, metadata, gsap, anime
+hooks/                  # useUser() — Clerk + Convex + subscription
+lib/                    # stripe, resend, ratelimit, errors, env, ai
 trigger/                # Trigger.dev background jobs
 ```
 
+---
+
 ## Conventions
 
-`CLAUDE.md` at the repo root is the design bible — icons, motion library decision tree, error handling, Stripe-is-opt-in, email primitives, design theme workflow, MCP/CLI usage rules. Claude Code reads it automatically every session. If you're editing manually, skim it once before you change anything.
+`AGENTS.md` (also linked as `CLAUDE.md` for Claude Code compat) is the source of truth for every architectural rule — icons, motion library decision tree, error handling, Stripe-is-opt-in, security non-negotiables, MCP/CLI usage rules. Every coding agent reads it automatically. If you're editing manually, skim it once.
 
-## Why this stack — costs
-
-Every service has a generous free tier. You can build, launch, and get real users for **$0/month**. When you outgrow the free tiers, every service stays cheap — most are $20–30/mo at the next tier, scaling linearly with usage. No seat-based pricing, no "contact sales" walls.
-
-| Service | Free tier | When you'd outgrow it |
-| --- | --- | --- |
-| **Vercel** (hosting) | 100 GB bandwidth | ~10k–50k monthly visitors |
-| **Clerk** (auth) | 10,000 MAU | After 10k MAU → $25/mo + $0.02/MAU |
-| **Convex** (database) | 1M function calls, 1 GB storage | Months for early-stage SaaS |
-| **Stripe** (payments) | No monthly fee | 2.9% + 30¢ per transaction |
-| **Resend** (email) | 3,000 emails/month | After 3k → $20/mo for 50k |
-| **PostHog** (analytics) | 1M events/month | Most products send <1M for a long time |
-| **Sentry** (errors) | 5,000 errors/month | Only matters at high error rates |
-| **Upstash** (Redis) | 10,000 commands/day | Plenty for rate limiting |
-| **Trigger.dev** (jobs) | 5,000 runs/month | Most apps run <5k jobs/month |
-| **GitHub** | Unlimited private repos, 2,000 CI min | CI here is ~1 min per PR |
+---
 
 ## Deploying
 
-`/setup` links the project to Vercel. Push to `master` and it deploys. Environment variables are synced via `vercel env`. Nothing else to configure.
+`/setup` links the project to Vercel. Push to `master` — it deploys. Env vars are synced via `vercel env`. `/add-stripe` and `/add-ai` push their own env vars to Vercel automatically.
 
-When you do `/add-stripe` (or enable payments during initial setup), the slash command also pushes Stripe env vars to Vercel and registers the production webhook automatically.
+---
 
 ## License
 
 **Proprietary — All Rights Reserved.** See [LICENSE](./LICENSE).
 
-This boilerplate is not open source. Only the author (Shaurya Chowdhri) may use it freely. Any other use — cloning as a template, copying patterns, redistributing — requires prior written permission AND prominent attribution: *"Built on the boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/boilerplate"*.
+Only the author may use this freely. Any other use requires prior written permission and prominent attribution: *"Built on Easy SaaS by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas"*.
 
 For licensing inquiries: shauryachowdhri@gmail.com
