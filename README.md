@@ -157,6 +157,24 @@ For each MCP, follow the linked docs to add it to `~/.claude.json`. Restart Clau
 | `/add-stripe` | Enable payments on a project that scaffolded without them |
 | `/design-taste-frontend` | Senior UI/UX rules — design tokens, motion intensity, density, anti-patterns |
 
+## Buying a domain
+
+You bring your own domain — the boilerplate just configures it. Recommended pattern:
+
+1. **Buy at [Porkbun](https://porkbun.com)** — typically the cheapest registrar (`.com` ≈ $11/yr, no upsell BS, no renewal-price hikes).
+2. **Point Porkbun's nameservers to Cloudflare** (free) — in Porkbun: Domain Management → your domain → **Authoritative Nameservers** → set to `<your-zone>.ns.cloudflare.com`. In Cloudflare: add the site, copy the nameservers it gives you back to Porkbun.
+3. **Manage DNS in Cloudflare from then on.** The Cloudflare MCP wired into `/setup` and `/add-stripe` will write the records (Vercel CNAME, Resend MX/SPF/DKIM, etc.) automatically.
+
+Why not just use Porkbun's DNS directly? Porkbun's DNS is fine, but Cloudflare's is faster, has a generous free tier, and there's an MCP — so the boilerplate can write your records for you. Other registrars (Namecheap, Cloudflare Registrar, Squarespace Domains) work the same way as long as you point nameservers at Cloudflare.
+
+After your domain is wired into Cloudflare, `/setup` handles the rest:
+
+- Adds the Vercel CNAME for your apex/www
+- Creates and verifies the Resend domain (so your emails come from `hello@yourdomain.com`)
+- Sets `FROM_EMAIL` in `.env.local` to a sender at your domain
+
+Change `FROM_EMAIL` to whatever you want — `hello@`, `team@`, `noreply@`, etc. The React Email templates respect it automatically.
+
 ## Use it modular or full-stack
 
 You don't have to use everything. Common patterns:
@@ -210,4 +228,8 @@ When you do `/add-stripe` (or enable payments during initial setup), the slash c
 
 ## License
 
-MIT. Do whatever you want with it.
+**Proprietary — All Rights Reserved.** See [LICENSE](./LICENSE).
+
+This boilerplate is not open source. Only the author (Shaurya Chowdhri) may use it freely. Any other use — cloning as a template, copying patterns, redistributing — requires prior written permission AND prominent attribution: *"Built on the boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/boilerplate"*.
+
+For licensing inquiries: shauryachowdhri@gmail.com

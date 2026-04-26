@@ -1,21 +1,63 @@
-MIT License
+PROPRIETARY LICENSE — ALL RIGHTS RESERVED
 
-Copyright (c) 2026 Shaurya Chowdhri
+Copyright (c) 2026 Shaurya Chowdhri. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+This software, including its source code, configuration, documentation,
+slash commands, design conventions, scaffolding scripts, and any
+accompanying materials (the "Software"), is the proprietary work of
+Shaurya Chowdhri ("the Author").
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. PERMITTED USE
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+The Author retains exclusive, perpetual, and unrestricted rights to use,
+modify, distribute, sublicense, and commercialize the Software for any
+purpose, with or without attribution.
+
+2. RESTRICTED USE FOR ALL OTHERS
+
+No person or entity other than the Author is granted any right to use,
+copy, modify, publish, distribute, sublicense, sell, or otherwise exploit
+the Software, in whole or in part, in any form, for any purpose —
+commercial, non-commercial, internal, educational, or otherwise — without
+the prior written permission of the Author.
+
+This includes, but is not limited to:
+
+  a. Cloning, forking, or mirroring the repository for any purpose other
+     than read-only personal study;
+  b. Using the Software, or any portion of it, as a starting point or
+     template for any other project;
+  c. Reproducing the architectural patterns, slash commands, design
+     conventions, or scaffolding workflow described herein in derivative
+     works without explicit written permission and prominent attribution;
+  d. Republishing, redistributing, or selling the Software in any form;
+  e. Removing or altering this LICENSE file or any copyright notices.
+
+3. ATTRIBUTION REQUIREMENT FOR PERMITTED DERIVATIVE WORKS
+
+If the Author grants written permission for any derivative or third-party
+use, that permission is conditional on the licensee:
+
+  a. Including a clear, visible attribution in the derivative work and
+     its public-facing materials (e.g. README, "About" page, credits)
+     reading: "Built on the boilerplate by Shaurya Chowdhri —
+     https://github.com/SCGamer30/boilerplate";
+  b. Retaining this LICENSE file unmodified in the derivative work's
+     repository;
+  c. Not implying endorsement by the Author.
+
+Failure to attribute revokes the granted permission immediately.
+
+4. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING
+FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+5. CONTACT
+
+For licensing inquiries, contact: shauryachowdhri@gmail.com

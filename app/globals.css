@@ -14,6 +14,7 @@
   --color-text-tertiary: #9ca3af;
   --color-accent: #16a34a;
   --color-accent-hover: #15803d;
+  --color-on-accent: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -27,6 +28,7 @@
     --color-text-tertiary: #52525b;
     --color-accent: #22c55e;
     --color-accent-hover: #16a34a;
+    --color-on-accent: #052e16;
   }
 }
 
@@ -40,6 +42,7 @@
   --color-text-tertiary: #52525b;
   --color-accent: #22c55e;
   --color-accent-hover: #16a34a;
+  --color-on-accent: #052e16;
 }
 
 * {
