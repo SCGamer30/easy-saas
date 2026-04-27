@@ -1,5 +1,7 @@
 # Project Context for AI Agents
 
+> **Editing note:** `CLAUDE.md` and `AGENTS.md` are kept byte-identical so every coding agent (Claude Code reads `CLAUDE.md`, Codex/Cursor/Cline read `AGENTS.md`) sees the same rules. Edit `AGENTS.md`, then run `cp AGENTS.md CLAUDE.md` before committing. CI fails if they drift.
+
 ## Stack
 
 - **Framework:** Next.js 15 (App Router, React 19, TypeScript strict) — root layout at `app/layout.tsx`
