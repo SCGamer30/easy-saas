@@ -33,13 +33,17 @@ if [ ${#missing[@]} -gt 0 ]; then
 fi
 
 PROJECT_NAME="$1"
-GITHUB_USER="scgamer30"
+GITHUB_USER=$(gh api user --jq .login 2>/dev/null)
+if [ -z "$GITHUB_USER" ]; then
+  echo "Could not detect GitHub user. Run: gh auth login"
+  exit 1
+fi
 PROJECTS_DIR="$HOME/Documents/GitHub"
 TARGET_DIR="$PROJECTS_DIR/$PROJECT_NAME"
 
 # Clone Easy SaaS boilerplate into new folder
 echo "Cloning Easy SaaS into $TARGET_DIR..."
-git clone "https://github.com/$GITHUB_USER/easy-saas.git" "$TARGET_DIR"
+git clone "https://github.com/SCGamer30/easy-saas.git" "$TARGET_DIR"
 cd "$TARGET_DIR"
 
 # Remove boilerplate remote
@@ -49,8 +53,9 @@ git remote remove origin
 sed -i '' "s/\"name\": \"easy-saas\"/\"name\": \"$PROJECT_NAME\"/" package.json
 sed -i '' "s/\"name\": \"boilerplate\"/\"name\": \"$PROJECT_NAME\"/" package.json
 
-# Update AGENTS.md title (CLAUDE.md is a symlink, so updating AGENTS.md updates both)
+# Update AGENTS.md and CLAUDE.md titles (kept as real duplicate files — see CI guard)
 sed -i '' "s/# Project Context for AI Agents/# $PROJECT_NAME — Project Context for AI Agents/" AGENTS.md
+cp AGENTS.md CLAUDE.md
 
 # Copy env example
 cp .env.example .env.local

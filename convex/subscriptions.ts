@@ -1,15 +1,6 @@
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
-
-// Shared-secret guard for webhook-triggered writes. The Next.js API route that
-// receives verified Stripe events forwards CONVEX_WEBHOOK_SECRET with each call
-// so the mutation cannot be invoked from the browser even though it is public.
-// Configure in Convex dashboard: Settings → Environment Variables.
-function assertWebhookSecret(secret: string) {
-  const expected = process.env.CONVEX_WEBHOOK_SECRET
-  if (!expected) throw new Error('CONVEX_WEBHOOK_SECRET not configured in Convex env')
-  if (secret !== expected) throw new Error('Invalid webhook secret')
-}
+import { assertWebhookSecret } from './lib'
 
 export const upsertSubscription = mutation({
   args: {
@@ -90,12 +81,3 @@ export const getSubscriptionByClerkId = query({
   },
 })
 
-export const getSubscriptionByStripeCustomer = query({
-  args: { stripeCustomerId: v.string() },
-  handler: async (ctx, args) => {
-    return ctx.db
-      .query('subscriptions')
-      .withIndex('by_stripe_customer_id', (q) => q.eq('stripeCustomerId', args.stripeCustomerId))
-      .unique()
-  },
-})

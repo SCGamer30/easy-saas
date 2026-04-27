@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { ClerkProvider, useAuth } from '@clerk/nextjs'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
 import { ConvexReactClient } from 'convex/react'
@@ -9,8 +8,9 @@ import { PostHogProvider } from 'posthog-js/react'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
 import { SmoothScroll } from '@/components/smooth-scroll'
+import { clientEnv } from '@/lib/env'
 
-const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convex = new ConvexReactClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
 const isPostHogEnabled =
   process.env.NODE_ENV === 'production' && !!process.env.NEXT_PUBLIC_POSTHOG_KEY
@@ -24,10 +24,6 @@ if (typeof window !== 'undefined' && isPostHogEnabled) {
 }
 
 function PostHogPageProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    if (!isPostHogEnabled) return
-  }, [])
-
   if (!isPostHogEnabled) {
     return <>{children}</>
   }

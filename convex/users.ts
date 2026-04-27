@@ -1,14 +1,6 @@
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
-
-// See convex/subscriptions.ts for the shared-secret pattern. The Clerk webhook
-// route forwards CONVEX_WEBHOOK_SECRET so this public mutation cannot be
-// spoofed from the browser.
-function assertWebhookSecret(secret: string) {
-  const expected = process.env.CONVEX_WEBHOOK_SECRET
-  if (!expected) throw new Error('CONVEX_WEBHOOK_SECRET not configured in Convex env')
-  if (secret !== expected) throw new Error('Invalid webhook secret')
-}
+import { assertWebhookSecret } from './lib'
 
 export const upsertUser = mutation({
   args: {
