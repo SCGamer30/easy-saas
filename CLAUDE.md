@@ -150,20 +150,30 @@ The answers drive theme selection, `NEXT_PUBLIC_PRODUCT_NAME`, and the tone of a
 
 ### Auto-pick heuristic (after the interview)
 
-Use the interview answers as the primary signal, and the project name as a fallback:
+The table below is a **starting suggestion, not an exhaustive map.** Pick whichever theme from the full catalog (linked at the bottom of this section) actually fits the project's vibe — don't artificially constrain the choice to these rows.
 
-| Signal in project name / README | Default theme |
+Use the interview answers as the primary signal, the project name + README as a secondary signal, and the table as a tiebreaker.
+
+| Signal in project / interview | Suggested theme |
 | --- | --- |
-| AI / chat / agent / LLM | Claude |
-| Dev tools / CLI / API / SDK | Linear |
-| Payments / billing / fintech | Stripe |
-| Data / analytics / dashboard | Vercel |
-| Design / creative / media | Figma |
-| Database / infra / backend | Supabase |
-| Marketing site / landing-first | Apple |
-| Productivity / docs / notes | Notion |
-| Build tool / framework | Vercel |
-| Nothing specific | Linear (safe default) |
+| AI / chat / agent / LLM / RAG | Claude or xAI |
+| Dev tools / CLI / API / SDK / IDE | Linear or Cursor |
+| Payments / billing / fintech / invoicing | Stripe |
+| Data / analytics / dashboard / observability | Vercel or Sentry |
+| Design / creative / media / portfolio | Figma or Runway |
+| Database / infra / backend / DevOps | Supabase or Linear |
+| Marketing site / landing-first / consumer | Apple or Lovable |
+| Productivity / docs / notes / wiki | Notion |
+| Build tool / framework / bundler | Vercel |
+| AI agents / automation / no-code workflows | Zapier or Claude |
+| Mobility / logistics / on-demand | Uber |
+| Hardware / GPU / ML training | NVIDIA |
+| Bold / experimental / "we want to look different" | xAI, Runway, NVIDIA, Lovable |
+| Nothing specific in interview | Linear (safe default) |
+
+**Full theme catalog:** Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — browse at https://github.com/VoltAgent/awesome-design-md to see each one's `DESIGN.md` before picking.
+
+**Off-list themes:** if a user asks for a vibe none of the catalog themes capture (e.g. "warm + editorial like the New York Times", "brutalist", "Y2K nostalgia"), don't force-fit a catalog theme — write a custom `DESIGN.md` matching the requested vibe and treat it as the design bible going forward. The catalog is a fast path, not a cage.
 
 Then, **without prompting the user**:
 
