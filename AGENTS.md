@@ -308,14 +308,34 @@ Copy `.env.example` to `.env.local` and fill in. See `/setup` for exact steps. G
 - **Upstash:** REST URL, REST token
 - **Trigger.dev:** secret key
 
-## Design Principles (from `/design-taste-frontend`)
+## Frontend Taste Rules — `TASTE.md` is mandatory reading
+
+`TASTE.md` at the repo root is a **standing rule document, not a slash command.** Read it before generating, editing, or refactoring any UI. The rules override LLM default biases toward generic AI-template aesthetics — bypassing them means you're shipping the same Inter/centered-hero/3-card-row that every other AI-generated site looks like.
+
+**Required workflow before any UI work:**
+
+1. Read `DESIGN.md` (project-specific theme — color, typography, motion vocabulary).
+2. Read `TASTE.md` (universal anti-slop rules — no emoji, no Inter, no centered heroes, no 3-equal-card rows, no purple glows, etc.).
+3. Cross-check the proposed change against both. If the user asks for something that contradicts either, flag the conflict.
+
+**TASTE.md baseline values** (override per-prompt if the user asks):
 
 - DESIGN_VARIANCE: 8 — asymmetric layouts, masonry, fractional grids
 - MOTION_INTENSITY: 6 — fluid CSS transitions + Framer Motion spring physics
 - VISUAL_DENSITY: 4 — daily app spacing, not cockpit, not gallery
-- No emoji, no Inter, no centered heroes, no 3-equal-card rows, no purple glows
-- Use `@phosphor-icons/react` for all icons
-- Full rules live in `.claude/commands/design-taste-frontend.md`. Invoke `/design-taste-frontend` for the full spec.
+
+**Highest-impact rules to internalize** (full list in `TASTE.md`):
+
+- No emoji anywhere — use `@phosphor-icons/react` exclusively
+- No Inter — use Geist, Outfit, Cabinet Grotesk, or Satoshi
+- No centered hero/H1 sections (use split-screen, asymmetric, or left-aligned)
+- No 3-equal-card row layouts (use 2-col zig-zag, asymmetric grid, or horizontal scroll)
+- No purple/blue AI-glow gradients — emerald/electric-blue/deep-rose accents only, saturation < 80%
+- No `h-screen` (use `min-h-[100dvh]` for mobile Safari stability)
+- No flexbox percentage math — CSS Grid for layouts
+- Animate only `transform` and `opacity` (hardware acceleration)
+- Spring physics only, no linear easing
+- Loading / empty / error states are mandatory, not optional
 
 ## Adding shadcn Components
 

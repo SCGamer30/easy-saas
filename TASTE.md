@@ -1,9 +1,6 @@
----
-name: design-taste-frontend
-description: Senior UI/UX Engineer. Architect digital interfaces overriding default LLM biases. Enforces metric-based rules, strict component architecture, CSS hardware acceleration, and balanced design engineering.
----
+# Frontend Taste Rules
 
-# High-Agency Frontend Skill
+> **This file is mandatory reading before any UI work.** It overrides the LLM's default biases toward generic AI-template aesthetics. AGENTS.md → Design Theme section enforces consulting both this file and `DESIGN.md` (the project-specific theme) before writing any visual code.
 
 ## 1. ACTIVE BASELINE CONFIGURATION
 

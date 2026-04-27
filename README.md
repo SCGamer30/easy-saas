@@ -94,7 +94,8 @@ npm run email:dev    # React Email preview on http://localhost:3001
 | `/setup` | Provisions auth, DB, email, analytics, errors, rate limit, jobs, design theme |
 | `/add-stripe` | Enables payments on a project that scaffolded without them |
 | `/add-ai` | Wires Vercel AI SDK + OpenRouter for chat/generation/agents |
-| `/design-taste-frontend` | Senior UI/UX rules — design tokens, motion, density, anti-patterns |
+
+The senior UI/UX rules used to be a slash command — they're now a standing reference at [`TASTE.md`](./TASTE.md), mandated by AGENTS.md before any UI work.
 
 ---
 
@@ -163,7 +164,9 @@ You don't need everything. Common patterns:
 
 ```
 app/                    # Next.js App Router pages + API routes
-.claude/commands/       # /setup, /add-stripe, /add-ai, /design-taste-frontend
+.claude/commands/       # /setup, /add-stripe, /add-ai
+TASTE.md                # standing UI/UX rules (mandatory before any UI work)
+DESIGN.md               # project-specific theme (auto-fetched by /setup)
 components/             # React components (shadcn/ui in components/ui/)
 convex/                 # Convex schema, queries, mutations
 emails/                 # React Email templates
