@@ -124,21 +124,23 @@ After all that, the only manual click left is grabbing two **Stripe API keys** f
 
 Install whichever you want — `/setup` works with whatever subset you have and falls back to manual instructions for anything missing. Each MCP is a one-time install in `~/.claude.json`; reused across every project.
 
-| MCP | Where to find install instructions |
-| --- | --- |
-| Clerk | [clerk.com/docs/mcp](https://clerk.com/docs/mcp) |
-| Convex | [docs.convex.dev/ai/mcp](https://docs.convex.dev/ai/mcp) |
-| Resend | [resend.com/docs/mcp](https://resend.com/docs/mcp) |
-| Vercel | [vercel.com/docs/mcp](https://vercel.com/docs/mcp) (built into Claude Code) |
-| Sentry | [docs.sentry.io/product/sentry-mcp](https://docs.sentry.io/product/sentry-mcp/) |
-| Cloudflare | [developers.cloudflare.com/agents/model-context-protocol](https://developers.cloudflare.com/agents/model-context-protocol/) |
-| Stripe | [docs.stripe.com/mcp](https://docs.stripe.com/mcp) |
-| Upstash | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server) |
-| PostHog | [posthog.com/docs/llm-observability/mcp](https://posthog.com/docs/llm-observability/mcp) |
-| Context7 | `npx ctx7` (auto-config) |
-| Playwright | Built into Claude Code |
+| MCP | Install command (Claude Code) | Docs |
+| --- | --- | --- |
+| Clerk | `claude mcp add clerk --transport http https://mcp.clerk.com/mcp` | [clerk.com](https://clerk.com/docs/guides/ai/mcp/clerk-mcp-server) |
+| Convex | `claude mcp add-json convex '{"type":"stdio","command":"npx","args":["convex","mcp","start"]}'` | [docs.convex.dev](https://docs.convex.dev/ai/convex-mcp-server) |
+| Resend | `claude mcp add resend -e RESEND_API_KEY=<your_key> -- npx -y resend-mcp` | [resend.com](https://resend.com/docs/mcp-server) |
+| Vercel | `claude mcp add --transport http vercel https://mcp.vercel.com` | [vercel.com](https://vercel.com/docs/agent-resources/vercel-mcp#claude-code) |
+| Sentry | `claude mcp add --transport http sentry https://mcp.sentry.dev/mcp` | [docs.sentry.io](https://docs.sentry.io/product/sentry-mcp/) |
+| Cloudflare | Add via the Claude.ai → Settings → Connectors marketplace (no CLI yet) | [developers.cloudflare.com](https://developers.cloudflare.com/agents/model-context-protocol/) |
+| Stripe | `claude mcp add --transport http stripe https://mcp.stripe.com/` | [docs.stripe.com](https://docs.stripe.com/mcp) |
+| Upstash | `claude mcp add --scope user upstash -- npx -y @upstash/mcp-server@latest --email <your_email> --api-key <your_key>` | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server) |
+| PostHog | `claude mcp add --transport http posthog https://mcp.posthog.com/mcp -s user` | [posthog.com](https://posthog.com/docs/model-context-protocol/claude-code) |
+| Context7 | `npx ctx7` (auto-config) | [context7.com](https://context7.com) |
+| Playwright | Built into Claude Code | — |
 
-MCP install patterns evolve quickly — always follow the provider's official docs above for the current command. The boilerplate doesn't hardcode any of them.
+After running each command, restart Claude Code and run `/mcp` to confirm `connected`. Most use OAuth — Claude will prompt you to authorize on first use. The Resend and Upstash entries take an API key inline; grab those from each provider's dashboard first.
+
+MCP install patterns evolve quickly — if a command above stops working, the linked docs page is canonical.
 
 ---
 
