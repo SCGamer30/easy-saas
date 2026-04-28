@@ -66,6 +66,7 @@ npm install
 
 # Install Claude Code skills for the stack
 echo "Installing agent skills..."
+npx skills add https://github.com/vercel-labs/skills --skill find-skills  # skill discovery — lets the agent search for more skills on its own
 npx skillsadd get-convex/agent-skills      # Convex queries, auth, schema patterns
 npx skillsadd vercel-labs/next-skills      # Next.js 15 best practices + caching
 npx skillsadd vercel-labs/agent-skills     # React 19, RSC composition, Vercel deploy
