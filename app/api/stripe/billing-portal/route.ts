@@ -5,8 +5,9 @@ import { z } from 'zod'
 import { api } from '@/convex/_generated/api'
 import { createBillingPortalSession, isStripeConfigured } from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { clientEnv } from '@/lib/env'
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
 const portalBodySchema = z
   .object({ returnUrl: z.string().url().optional() })

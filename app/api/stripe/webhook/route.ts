@@ -8,8 +8,9 @@ import {
   sendSubscriptionCanceledEmail,
   sendSubscriptionConfirmedEmail,
 } from '@/lib/resend'
+import { clientEnv } from '@/lib/env'
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
 const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? 'Your App'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'

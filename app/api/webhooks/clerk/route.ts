@@ -6,8 +6,9 @@ import * as Sentry from '@sentry/nextjs'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
 import { sendWelcomeEmail } from '@/lib/resend'
+import { clientEnv } from '@/lib/env'
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
 const PRODUCT_NAME = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? 'Your App'
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'

@@ -5,8 +5,9 @@ import { z } from 'zod'
 import { api } from '@/convex/_generated/api'
 import { createCheckoutSession, createStripeCustomer, isStripeConfigured } from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
+import { clientEnv } from '@/lib/env'
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
+const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
 const checkoutBodySchema = z.object({
   priceId: z.string().startsWith('price_').min(1),
