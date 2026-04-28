@@ -64,6 +64,16 @@ cp .env.example .env.local
 echo "Installing dependencies..."
 npm install
 
+# Install Claude Code skills for the stack
+echo "Installing agent skills..."
+npx skillsadd get-convex/agent-skills      # Convex queries, auth, schema patterns
+npx skillsadd vercel-labs/next-skills      # Next.js 15 best practices + caching
+npx skillsadd vercel-labs/agent-skills     # React 19, RSC composition, Vercel deploy
+npx skillsadd shadcn/ui                    # shadcn component patterns
+npx skillsadd sentry/dev                   # Sentry CLI workflows
+npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
+npx skillsadd wshobson/agents              # TypeScript advanced types + Node.js patterns
+
 # Create GitHub repo and push
 echo "Creating GitHub repo..."
 gh repo create "$GITHUB_USER/$PROJECT_NAME" --private --source=. --remote=origin --push
