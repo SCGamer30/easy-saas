@@ -67,13 +67,41 @@ npm install
 # Install Claude Code skills for the stack
 echo "Installing agent skills..."
 npx skills add https://github.com/vercel-labs/skills --skill find-skills  # skill discovery — lets the agent search for more skills on its own
-npx skillsadd get-convex/agent-skills      # Convex queries, auth, schema patterns
+
+# Core framework
 npx skillsadd vercel-labs/next-skills      # Next.js 15 best practices + caching
 npx skillsadd vercel-labs/agent-skills     # React 19, RSC composition, Vercel deploy
 npx skillsadd shadcn/ui                    # shadcn component patterns
-npx skillsadd sentry/dev                   # Sentry CLI workflows
-npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
 npx skillsadd wshobson/agents              # TypeScript advanced types + Node.js patterns
+
+# Auth
+npx skillsadd clerk/skills                 # Clerk Next.js patterns, webhooks, React patterns
+
+# Database
+npx skillsadd get-convex/agent-skills      # Convex queries, auth, schema patterns
+
+# Email
+npx skillsadd resend/resend-skills         # Resend API + CLI
+npx skillsadd resend/react-email           # React Email component patterns
+npx skillsadd resend/email-best-practices  # Email deliverability + best practices
+
+# Rate limiting + background jobs
+npx skillsadd upstash/skills               # Upstash Redis
+npx skillsadd upstash/ratelimit-js         # Upstash rate limiting (matches lib/ratelimit.ts)
+npx skillsadd triggerdotdev/skills         # Trigger.dev tasks, config, agents, realtime
+
+# Analytics + observability
+npx skillsadd posthog/posthog-for-claude   # PostHog instrumentation (built for Claude)
+npx skills add https://github.com/posthog/skills --skill integration-nextjs-app-router  # PostHog + Next.js App Router
+npx skills add https://github.com/posthog/skills --skill feature-flags-nextjs           # Feature flags for Next.js
+npx skills add https://github.com/posthog/skills --skill error-tracking-nextjs          # Error tracking for Next.js
+npx skillsadd sentry/dev                   # Sentry CLI workflows
+
+# Animation (GSAP is in the stack)
+npx skillsadd greensock/gsap-skills        # GSAP + ScrollTrigger patterns
+
+# Testing
+npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
 
 # Create GitHub repo and push
 echo "Creating GitHub repo..."
