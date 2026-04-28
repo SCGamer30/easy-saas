@@ -9,8 +9,18 @@ import { clientEnv } from '@/lib/env'
 
 const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
+const appUrl = clientEnv.NEXT_PUBLIC_APP_URL
+
 const portalBodySchema = z
-  .object({ returnUrl: z.string().url().optional() })
+  .object({
+    returnUrl: z
+      .string()
+      .url()
+      .refine((url) => url.startsWith(appUrl), {
+        message: 'returnUrl must be on the same domain as the app',
+      })
+      .optional(),
+  })
   .partial()
   .optional()
 

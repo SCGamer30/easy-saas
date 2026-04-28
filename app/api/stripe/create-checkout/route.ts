@@ -9,10 +9,24 @@ import { clientEnv } from '@/lib/env'
 
 const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 
+const appUrl = clientEnv.NEXT_PUBLIC_APP_URL
+
 const checkoutBodySchema = z.object({
   priceId: z.string().startsWith('price_').min(1),
-  successUrl: z.string().url().optional(),
-  cancelUrl: z.string().url().optional(),
+  successUrl: z
+    .string()
+    .url()
+    .refine((url) => url.startsWith(appUrl), {
+      message: 'successUrl must be on the same domain as the app',
+    })
+    .optional(),
+  cancelUrl: z
+    .string()
+    .url()
+    .refine((url) => url.startsWith(appUrl), {
+      message: 'cancelUrl must be on the same domain as the app',
+    })
+    .optional(),
 })
 
 export async function POST(req: Request) {
