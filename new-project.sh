@@ -108,6 +108,17 @@ npx skillsadd stripe/ai                    # Official Stripe AI skills — best 
 
 # Testing
 npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
+npx skillsadd anthropics/skills                             # Web app testing patterns (57K installs)
+
+# Web quality, performance, accessibility
+npx skillsadd addyosmani/web-quality-skills  # Core Web Vitals, accessibility, SEO, performance — Addy Osmani
+
+# Design engineering + UI craft
+npx skillsadd emilkowalski/skill  # Design engineering — Emil Kowalski (Sonner author)
+npx skillsadd ibelick/ui-skills   # Motion performance, accessibility, metadata — ibelick
+
+# Security
+npx skillsadd getsentry/skills  # Security review patterns (OWASP, input validation, secrets)
 
 # Create GitHub repo and push
 echo "Creating GitHub repo..."
