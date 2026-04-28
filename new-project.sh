@@ -73,6 +73,7 @@ npx skillsadd vercel-labs/next-skills      # Next.js 15 best practices + caching
 npx skillsadd vercel-labs/agent-skills     # React 19, RSC composition, Vercel deploy
 npx skillsadd shadcn/ui                    # shadcn component patterns
 npx skillsadd wshobson/agents              # TypeScript advanced types + Node.js patterns
+npx skillsadd pproenca/dot-skills          # Zod, React Hook Form, Framer Motion best practices
 
 # Auth
 npx skillsadd clerk/skills                 # Clerk Next.js patterns, webhooks, React patterns
@@ -97,8 +98,13 @@ npx skills add https://github.com/posthog/skills --skill feature-flags-nextjs   
 npx skills add https://github.com/posthog/skills --skill error-tracking-nextjs          # Error tracking for Next.js
 npx skillsadd sentry/dev                   # Sentry CLI workflows
 
-# Animation (GSAP is in the stack)
+# Animation + WebGL (all in the stack)
 npx skillsadd greensock/gsap-skills        # GSAP + ScrollTrigger patterns
+npx skillsadd cloudai-x/threejs-skills     # Three.js fundamentals, shaders, animation, lighting
+npx skillsadd patricio0312rev/skills       # Framer Motion animator
+
+# Payments
+npx skillsadd stripe/ai                    # Official Stripe AI skills — best practices + upgrade guides
 
 # Testing
 npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
