@@ -135,6 +135,7 @@ Install whichever you want — `/setup` works with whatever subset you have and 
 | Stripe | `claude mcp add --transport http stripe https://mcp.stripe.com/` | [docs.stripe.com/mcp](https://docs.stripe.com/mcp) |
 | Upstash | `claude mcp add --scope user upstash -- npx -y @upstash/mcp-server@latest --email <your_email> --api-key <your_key>` | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server) |
 | PostHog | `claude mcp add --transport http posthog https://mcp.posthog.com/mcp -s user` | [posthog.com/docs/model-context-protocol/claude-code](https://posthog.com/docs/model-context-protocol/claude-code) |
+| Trigger.dev | `npx trigger.dev@latest install-mcp --client claude-code` | [trigger.dev/docs/mcp-server](https://trigger.dev/docs/mcp-server) |
 | Context7 | `npx ctx7` (auto-config) | [context7.com](https://context7.com) |
 | Playwright | Built into Claude Code | — |
 

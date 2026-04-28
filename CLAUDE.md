@@ -215,6 +215,7 @@ Available MCP servers (call them silently when relevant):
 | **Stripe** | Creating products / prices / webhooks, querying customers, refunds, invoice lookup |
 | **Upstash** | Creating Redis databases, listing instances |
 | **PostHog** | Creating projects, running analytics queries |
+| **Trigger.dev** | Creating projects, retrieving API keys, monitoring runs |
 | **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
 | **Context7** | Library / framework / SDK documentation lookups |
 | **Playwright** | Browser automation for testing or scraping |

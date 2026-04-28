@@ -120,7 +120,13 @@ If no custom domain or MCP not connected, skip.
 
 ## 7. Initialize Trigger.dev
 
-Run the Trigger.dev init command to link the project. It will prompt to create a Trigger.dev project or select an existing one and write `TRIGGER_PROJECT_ID` into `trigger.config.ts`.
+If the Trigger.dev MCP is connected, use it to create the project and retrieve the API key directly. Install the MCP once with:
+
+```bash
+npx trigger.dev@latest install-mcp --client claude-code
+```
+
+If the MCP is not connected, run the CLI init which will prompt to create or select a project and write `TRIGGER_PROJECT_ID` into `trigger.config.ts`:
 
 ```bash
 npx trigger.dev@latest init
@@ -330,6 +336,9 @@ sed -i '' "s|^NEXT_PUBLIC_POSTHOG_KEY=.*|NEXT_PUBLIC_POSTHOG_KEY=$POSTHOG_KEY|" 
 
 ### F. Trigger.dev (skip if you didn't run step 7)
 
+If the Trigger.dev MCP is connected, it can retrieve the API key automatically — no dashboard visit needed.
+
+If the MCP is not connected:
 1. Go to https://cloud.trigger.dev and sign in.
 2. Click **New Project**. Name it.
 3. Go to **API Keys** in the left sidebar. Copy the **DEV Server** key (starts with `tr_dev_`).
