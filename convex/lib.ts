@@ -6,11 +6,17 @@
  * guess the secret one character at a time.
  */
 function timingSafeEqual(a: string, b: string): boolean {
-  const maxLen = Math.max(a.length, b.length)
-  let result = a.length === b.length ? 0 : 1
-  for (let i = 0; i < maxLen; i++) {
-    // Wrap index to avoid short-circuit on length mismatch leaking info
-    result |= a.charCodeAt(i % a.length) ^ b.charCodeAt(i % b.length)
+  // Compare in constant time. Length mismatch must not short-circuit — burn
+  // the same number of iterations as the longer string to avoid leaking length.
+  if (a.length !== b.length) {
+    let dummy = 0
+    for (let i = 0; i < b.length; i++) dummy |= b.charCodeAt(i) ^ b.charCodeAt(i)
+    void dummy
+    return false
+  }
+  let result = 0
+  for (let i = 0; i < a.length; i++) {
+    result |= a.charCodeAt(i) ^ b.charCodeAt(i)
   }
   return result === 0
 }

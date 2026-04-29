@@ -40,6 +40,7 @@ const serverSchema = z.object({
   // Email
   RESEND_API_KEY: z.string().optional(),
   FROM_EMAIL: z.string().email().optional(),
+  FEEDBACK_EMAIL: z.string().email().optional(),
 
   // Observability
   SENTRY_ORG: z.string().optional(),
@@ -82,7 +83,8 @@ function parseClient() {
 }
 
 function parseServer() {
-  if (process.env.SKIP_ENV_VALIDATION === '1') return process.env as unknown as z.infer<typeof serverSchema>
+  if (process.env.SKIP_ENV_VALIDATION === '1')
+    return process.env as unknown as z.infer<typeof serverSchema>
   const result = serverSchema.safeParse(process.env)
   if (!result.success) fail('Server', result.error.issues)
   return result.data

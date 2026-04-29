@@ -4,10 +4,7 @@ import * as Sentry from '@sentry/nextjs'
 import { getStripe, isStripeConfigured } from '@/lib/stripe'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@/convex/_generated/api'
-import {
-  sendSubscriptionCanceledEmail,
-  sendSubscriptionConfirmedEmail,
-} from '@/lib/resend'
+import { sendSubscriptionCanceledEmail, sendSubscriptionConfirmedEmail } from '@/lib/resend'
 import { clientEnv } from '@/lib/env'
 
 const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
@@ -66,8 +63,9 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, stripeWebhookSecret)
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Invalid signature'
-    return NextResponse.json({ error: message }, { status: 400 })
+    // Don't return the raw Stripe error — it leaks signature timing details
+    Sentry.captureException(err)
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
   switch (event.type) {
@@ -84,14 +82,19 @@ export async function POST(req: Request) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId)
       const plan = subscription.items.data[0]?.price.lookup_key ?? 'default'
 
-      await convex.mutation(api.subscriptions.upsertSubscription, {
-        webhookSecret,
-        clerkId,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        status: subscription.status,
-        plan,
-      })
+      try {
+        await convex.mutation(api.subscriptions.upsertSubscription, {
+          webhookSecret,
+          clerkId,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
+          status: subscription.status,
+          plan,
+        })
+      } catch (err) {
+        Sentry.captureException(err)
+        return NextResponse.json({ error: 'Failed to sync subscription' }, { status: 500 })
+      }
 
       const email = session.customer_details?.email
       const customerName = session.customer_details?.name ?? undefined
@@ -123,13 +126,18 @@ export async function POST(req: Request) {
         typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
       const plan = subscription.items.data[0]?.price.lookup_key ?? 'default'
 
-      await convex.mutation(api.subscriptions.updateSubscriptionByStripeCustomer, {
-        webhookSecret,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscription.id,
-        status: subscription.status,
-        plan,
-      })
+      try {
+        await convex.mutation(api.subscriptions.updateSubscriptionByStripeCustomer, {
+          webhookSecret,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscription.id,
+          status: subscription.status,
+          plan,
+        })
+      } catch (err) {
+        Sentry.captureException(err)
+        return NextResponse.json({ error: 'Failed to sync subscription' }, { status: 500 })
+      }
 
       if (event.type === 'customer.subscription.deleted') {
         try {

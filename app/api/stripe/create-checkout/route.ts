@@ -72,14 +72,10 @@ export async function POST(req: Request) {
 
   const parsed = checkoutBodySchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid request body', issues: parsed.error.issues },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
   const { priceId, successUrl, cancelUrl } = parsed.data
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const user = await currentUser()
   const email = user?.primaryEmailAddress?.emailAddress
 

@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 
 /**
@@ -31,8 +32,32 @@ export async function hasRole(role: string): Promise<boolean> {
  *   ...
  * }
  */
+/**
+ * Throws a redirect to /dashboard if the user does not have the given role.
+ * Use at the top of admin **Server Components / Pages** only.
+ *
+ * For Route Handlers, use requireRoleApi() instead — redirect() inside a
+ * Route Handler returns a 307, not a 401, which confuses API clients.
+ */
 export async function requireRole(role: string): Promise<void> {
   const { redirect } = await import('next/navigation')
   const ok = await hasRole(role)
   if (!ok) redirect('/dashboard')
+}
+
+/**
+ * Returns a 403 NextResponse if the user does not have the given role.
+ * Use at the top of admin **Route Handlers**.
+ *
+ * import { requireRoleApi } from '@/lib/roles'
+ * export async function GET() {
+ *   const denied = await requireRoleApi('admin')
+ *   if (denied) return denied
+ *   ...
+ * }
+ */
+export async function requireRoleApi(role: string): Promise<NextResponse | null> {
+  const ok = await hasRole(role)
+  if (!ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  return null
 }

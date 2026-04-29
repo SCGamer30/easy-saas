@@ -113,7 +113,8 @@ To enable payments later, the user runs `/add-stripe` — that command provision
 ## Admin Panel
 
 - Route: `/admin` — protected by Clerk `publicMetadata.role === 'admin'`.
-- Gate pattern: `await requireRole('admin')` from `lib/roles.ts` at the top of any admin Server Component or Route Handler.
+- Gate pattern for **Server Components / Pages**: `await requireRole('admin')` from `lib/roles.ts` — throws a redirect to `/dashboard` on failure.
+- Gate pattern for **Route Handlers**: `const denied = await requireRoleApi('admin'); if (denied) return denied` — returns a 403 JSON response. Never use `requireRole` in a Route Handler; `redirect()` inside a Route Handler emits a 307, not a 401.
 - To grant admin access: Clerk dashboard → Users → [user] → Metadata → Public → `{ "role": "admin" }`.
 - Add Convex admin queries to `convex/admin.ts`. Always verify `identity.publicMetadata?.role === 'admin'` inside the query handler — never trust client-side role checks alone.
 

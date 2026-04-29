@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 import { checkRateLimit } from '@/lib/ratelimit'
 import { isResendConfigured } from '@/lib/resend'
 import { Resend } from 'resend'
@@ -29,10 +30,7 @@ export async function POST(req: Request) {
 
   const parsed = feedbackSchema.safeParse(await req.json().catch(() => null))
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid request body', issues: parsed.error.issues },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
 
   const { message, page } = parsed.data
@@ -48,14 +46,19 @@ export async function POST(req: Request) {
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY)
-  await resend.emails.send({
-    from: toEmail,
-    to: toEmail,
-    subject: `Feedback from user ${userId}`,
-    text: [`User: ${userId}`, page ? `Page: ${page}` : null, '', message]
-      .filter(Boolean)
-      .join('\n'),
-  })
+  try {
+    await resend.emails.send({
+      from: toEmail,
+      to: toEmail,
+      subject: `Feedback from user ${userId}`,
+      text: [`User: ${userId}`, page ? `Page: ${page}` : null, '', message]
+        .filter(Boolean)
+        .join('\n'),
+    })
+  } catch (err) {
+    Sentry.captureException(err)
+    // Don't surface email failures to the user — feedback was captured
+  }
 
   return NextResponse.json({ ok: true })
 }

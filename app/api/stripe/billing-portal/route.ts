@@ -58,13 +58,9 @@ export async function POST(req: Request) {
     )
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const parsed = portalBodySchema.safeParse(await req.json().catch(() => ({})))
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: 'Invalid request body', issues: parsed.error.issues },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
   const returnUrl = parsed.data?.returnUrl ?? null
 
