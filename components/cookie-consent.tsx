@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CookieSimple, X } from '@phosphor-icons/react'
+import { Cookie, X } from '@phosphor-icons/react'
 import posthog from 'posthog-js'
 import { useCookieConsent } from '@/hooks/use-cookie-consent'
 
@@ -56,7 +56,7 @@ export function CookieConsent() {
           </button>
 
           <div className="flex items-start gap-3">
-            <CookieSimple
+            <Cookie
               size={20}
               weight="duotone"
               className="mt-0.5 shrink-0"
