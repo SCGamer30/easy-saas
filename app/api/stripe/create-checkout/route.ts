@@ -3,7 +3,12 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { ConvexHttpClient } from 'convex/browser'
 import { z } from 'zod'
 import { api } from '@/convex/_generated/api'
-import { createCheckoutSession, createStripeCustomer, isStripeConfigured } from '@/lib/stripe'
+import {
+  createCheckoutSession,
+  createStripeCustomer,
+  getStripe,
+  isStripeConfigured,
+} from '@/lib/stripe'
 import { checkRateLimit } from '@/lib/ratelimit'
 import { clientEnv } from '@/lib/env'
 
@@ -89,12 +94,24 @@ export async function POST(req: Request) {
 
   let customerId = existing?.stripeCustomerId
   if (!customerId) {
-    const customer = await createStripeCustomer({
-      email,
-      name: user?.fullName ?? undefined,
-      clerkId: userId,
+    // Guard against TOCTOU: two concurrent requests may both see no customer
+    // in Convex and both try to create one. Search Stripe by clerkId metadata
+    // first — if a customer was already created by a racing request, reuse it.
+    const stripe = getStripe()
+    const stripeSearch = await stripe.customers.search({
+      query: `metadata['clerkId']:'${userId}'`,
+      limit: 1,
     })
-    customerId = customer.id
+    if (stripeSearch.data.length > 0) {
+      customerId = stripeSearch.data[0]!.id
+    } else {
+      const customer = await createStripeCustomer({
+        email,
+        name: user?.fullName ?? undefined,
+        clerkId: userId,
+      })
+      customerId = customer.id
+    }
   }
 
   const session = await createCheckoutSession({
