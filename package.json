@@ -37,7 +37,7 @@
     "@phosphor-icons/react": "^2.1.7",
     "@react-email/components": "^1.0.12",
     "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.0",
+    "@react-three/fiber": "^9.6.1",
     "@rive-app/react-canvas": "^4.28.1",
     "@sentry/nextjs": "^10.49.0",
     "@stripe/stripe-js": "^9.2.0",
