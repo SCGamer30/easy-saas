@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChatCircle, X, PaperPlaneTilt } from '@phosphor-icons/react'
-import { usePathname } from 'next/navigation'
 import { toast } from 'sonner'
 import { useUser } from '@/hooks/use-user'
 
@@ -22,7 +21,6 @@ export function FeedbackButton() {
   const [open, setOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
-  const pathname = usePathname()
 
   if (!isSignedIn) return null
 

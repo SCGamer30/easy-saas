@@ -1,0 +1,6 @@
+# Security disclosure policy
+# Replace the fields below with your real contact info before going to production.
+# Reference: https://securitytxt.org
+
+Contact: mailto:security@yourdomain.com
+Preferred-Languages: en
