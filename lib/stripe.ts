@@ -32,7 +32,7 @@ export function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) throw new StripeNotConfiguredError()
   _stripe = new Stripe(key, {
-    apiVersion: '2026-03-25.dahlia',
+    apiVersion: '2026-04-22.dahlia',
     typescript: true,
   })
   return _stripe
