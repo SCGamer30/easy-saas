@@ -165,7 +165,7 @@ npm run analyze        # next build + bundle size treemap
 
 - **Contact / simple forms:** Formspree. Just set the form `action` to your Formspree endpoint — no backend needed.
 - **Embeddable forms:** Youform. Paste the embed snippet.
-- **Newsletter signups:** beehiiv. Use the embed form or its API.
+
 - Only build a custom backend form when none of the above fit (e.g. the submission must trigger server-side logic).
 
 ## Motion & WebGL — which tool for which job
@@ -262,22 +262,22 @@ Whenever a task involves a service with an available MCP server or CLI, **use it
 
 Available MCP servers (call them silently when relevant):
 
-| Service               | Use the MCP for                                                                                                      |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Clerk**             | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard                                |
-| **Convex**            | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
-| **Resend**            | Creating API keys, domains, sending test emails, checking delivery status                                            |
-| **Vercel**            | Listing deployments, env vars, logs, project info                                                                    |
-| **Sentry**            | Creating projects, querying errors, looking up issue details                                                         |
-| **Cloudflare**        | Looking up zones, creating/listing DNS records                                                                       |
-| **Stripe**            | Creating products / prices / webhooks, querying customers, refunds, invoice lookup                                   |
-| **Upstash**           | Creating Redis databases, listing instances                                                                          |
-| **PostHog**           | Creating projects, running analytics queries                                                                         |
-| **Trigger.dev**       | Creating projects, retrieving API keys, monitoring runs                                                              |
-| **beehiiv**           | OAuth auth, listing publications, creating/retrieving API keys — use when running `/add-newsletter`                  |
-| **GitHub** (`gh` CLI) | Issues, PRs, repo creation                                                                                           |
-| **Context7**          | Library / framework / SDK documentation lookups                                                                      |
-| **Playwright**        | Browser automation for testing or scraping                                                                           |
+| Service         | Use the MCP for                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Clerk**       | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard                                |
+| **Convex**      | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
+| **Resend**      | Creating API keys, domains, sending test emails, checking delivery status                                            |
+| **Vercel**      | Listing deployments, env vars, logs, project info                                                                    |
+| **Sentry**      | Creating projects, querying errors, looking up issue details                                                         |
+| **Cloudflare**  | Looking up zones, creating/listing DNS records                                                                       |
+| **Stripe**      | Creating products / prices / webhooks, querying customers, refunds, invoice lookup                                   |
+| **Upstash**     | Creating Redis databases, listing instances                                                                          |
+| **PostHog**     | Creating projects, running analytics queries                                                                         |
+| **Trigger.dev** | Creating projects, retrieving API keys, monitoring runs                                                              |
+
+| **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
+| **Context7** | Library / framework / SDK documentation lookups |
+| **Playwright** | Browser automation for testing or scraping |
 
 Available CLIs (use without asking — these are pre-installed):
 
