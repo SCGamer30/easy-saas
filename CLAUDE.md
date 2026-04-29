@@ -92,6 +92,49 @@ To enable payments later, the user runs `/add-stripe` — that command provision
 ## Hooks
 
 - Always use `useUser()` from `hooks/use-user.ts` instead of calling `useUser()` from Clerk + a Convex query separately. It returns `{ clerkUser, user, subscription, isPro, isStudio, isPaid, isSignedIn, isLoaded }`.
+- `useFeatureFlag(flag)` / `useFeatureFlagVariant(flag)` from `hooks/use-feature-flag.ts` — thin wrappers around PostHog feature flags. Use instead of calling `useFeatureFlagEnabled` directly.
+- `useCookieConsent()` from `hooks/use-cookie-consent.ts` — reads/writes the user's analytics consent from localStorage. Used internally by `<CookieConsent />`.
+
+## Admin Panel
+
+- Route: `/admin` — protected by Clerk `publicMetadata.role === 'admin'`.
+- Gate pattern: `await requireRole('admin')` from `lib/roles.ts` at the top of any admin Server Component or Route Handler.
+- To grant admin access: Clerk dashboard → Users → [user] → Metadata → Public → `{ "role": "admin" }`.
+- Add Convex admin queries to `convex/admin.ts`. Always verify `identity.publicMetadata?.role === 'admin'` inside the query handler — never trust client-side role checks alone.
+
+## Cookie Consent
+
+- `<CookieConsent />` is mounted in `app/layout.tsx`. Remove it if your app doesn't use tracking cookies (analytics-only apps that users don't expect to track them).
+- PostHog is initialised with `opt_out_capturing_by_default: true` — no events are captured until the user clicks Accept. Remove that flag if you remove the consent banner.
+- On Accept → `posthog.opt_in_capturing()`. On Decline / dismiss → `posthog.opt_out_capturing()`. Preference stored in localStorage.
+
+## Feedback Widget
+
+- `<FeedbackButton />` is mounted in `app/layout.tsx` (bottom-left, signed-in users only). Remove it if you don't want in-app feedback.
+- Submits to `POST /api/feedback`. Works without Resend configured (silent in prod, `console.info` in dev).
+- Rate-limited via the `email` limiter (5 req/60s per user).
+
+## Testing
+
+- **Unit tests:** Vitest — `npm run test`. Config at `vitest.config.ts`. Test files in `**/__tests__/**` or `**/*.test.ts`.
+- **E2E tests:** Playwright — `npm run test:e2e`. Config at `playwright.config.ts`. Tests in `e2e/`.
+- **Smoke suite:** `e2e/smoke.test.ts` — home page, sign-in, dashboard redirect, 404.
+- Start with unit tests for pure functions in `lib/`. Use Playwright for user-facing flows.
+
+## Bundle Analysis
+
+- `npm run analyze` — builds with `ANALYZE=true`, opens interactive treemap in browser.
+- Run after adding heavy dependencies to verify they're code-split and not landing on every page.
+
+## Scripts
+
+```bash
+npm run test           # vitest unit tests
+npm run test:watch     # vitest in watch mode
+npm run test:e2e       # playwright e2e tests
+npm run test:e2e:ui    # playwright interactive UI
+npm run analyze        # next build + bundle size treemap
+```
 
 ## Convex
 
@@ -114,17 +157,17 @@ To enable payments later, the user runs `/add-stripe` — that command provision
 
 Four animation tools are available. Pick the right one per use case, don't reach for all of them on every project:
 
-| Use case | Tool | Why |
-| --- | --- | --- |
-| Component entrance, hover, layout animations | **Framer Motion** | Declarative, React-native, spring physics built-in |
-| Scroll-driven sequences (pin, parallax, story scroll) | **GSAP + ScrollTrigger** | Timelines with labels, scrubbing, snap — nothing else comes close |
-| Route transitions (App Router) | `components/page-transition.tsx` | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe |
-| SVG path morphing, stroke-dash | **GSAP** | Use the same GSAP install — no separate library needed |
-| Hero 3D, shader backgrounds, GPU-driven visuals | `components/webgl-scene.tsx` (react-three-fiber) | Dynamic-imported, lazy-loaded, drei helpers included |
-| Designer-exported playback animation (empty state, hero illustration, success confetti) | `components/lottie-player.tsx` (dotLottie) | Designer owns the animation, you embed the `.lottie` file |
-| Interactive, input-driven animation (mascots, illustrated toggles, scrubbable characters) | `components/rive-scene.tsx` (Rive) | State machines respond to pointer/scroll/app state in real time |
-| List/grid enter-leave-reorder animations | `hooks/use-auto-animate.ts` (AutoAnimate) | One ref, zero config — animates any children change automatically |
-| Inverted cursor / high-contrast overlays | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath |
+| Use case                                                                                  | Tool                                                        | Why                                                               |
+| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
+| Component entrance, hover, layout animations                                              | **Framer Motion**                                           | Declarative, React-native, spring physics built-in                |
+| Scroll-driven sequences (pin, parallax, story scroll)                                     | **GSAP + ScrollTrigger**                                    | Timelines with labels, scrubbing, snap — nothing else comes close |
+| Route transitions (App Router)                                                            | `components/page-transition.tsx`                            | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe      |
+| SVG path morphing, stroke-dash                                                            | **GSAP**                                                    | Use the same GSAP install — no separate library needed            |
+| Hero 3D, shader backgrounds, GPU-driven visuals                                           | `components/webgl-scene.tsx` (react-three-fiber)            | Dynamic-imported, lazy-loaded, drei helpers included              |
+| Designer-exported playback animation (empty state, hero illustration, success confetti)   | `components/lottie-player.tsx` (dotLottie)                  | Designer owns the animation, you embed the `.lottie` file         |
+| Interactive, input-driven animation (mascots, illustrated toggles, scrubbable characters) | `components/rive-scene.tsx` (Rive)                          | State machines respond to pointer/scroll/app state in real time   |
+| List/grid enter-leave-reorder animations                                                  | `hooks/use-auto-animate.ts` (AutoAnimate)                   | One ref, zero config — animates any children change automatically |
+| Inverted cursor / high-contrast overlays                                                  | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath               |
 
 Rules:
 
@@ -154,22 +197,22 @@ The table below is a **starting suggestion, not an exhaustive map.** Pick whiche
 
 Use the interview answers as the primary signal, the project name + README as a secondary signal, and the table as a tiebreaker.
 
-| Signal in project / interview | Suggested theme |
-| --- | --- |
-| AI / chat / agent / LLM / RAG | Claude or xAI |
-| Dev tools / CLI / API / SDK / IDE | Linear or Cursor |
-| Payments / billing / fintech / invoicing | Stripe |
-| Data / analytics / dashboard / observability | Vercel or Sentry |
-| Design / creative / media / portfolio | Figma or Runway |
-| Database / infra / backend / DevOps | Supabase or Linear |
-| Marketing site / landing-first / consumer | Apple or Lovable |
-| Productivity / docs / notes / wiki | Notion |
-| Build tool / framework / bundler | Vercel |
-| AI agents / automation / no-code workflows | Zapier or Claude |
-| Mobility / logistics / on-demand | Uber |
-| Hardware / GPU / ML training | NVIDIA |
+| Signal in project / interview                     | Suggested theme              |
+| ------------------------------------------------- | ---------------------------- |
+| AI / chat / agent / LLM / RAG                     | Claude or xAI                |
+| Dev tools / CLI / API / SDK / IDE                 | Linear or Cursor             |
+| Payments / billing / fintech / invoicing          | Stripe                       |
+| Data / analytics / dashboard / observability      | Vercel or Sentry             |
+| Design / creative / media / portfolio             | Figma or Runway              |
+| Database / infra / backend / DevOps               | Supabase or Linear           |
+| Marketing site / landing-first / consumer         | Apple or Lovable             |
+| Productivity / docs / notes / wiki                | Notion                       |
+| Build tool / framework / bundler                  | Vercel                       |
+| AI agents / automation / no-code workflows        | Zapier or Claude             |
+| Mobility / logistics / on-demand                  | Uber                         |
+| Hardware / GPU / ML training                      | NVIDIA                       |
 | Bold / experimental / "we want to look different" | xAI, Runway, NVIDIA, Lovable |
-| Nothing specific in interview | Linear (safe default) |
+| Nothing specific in interview                     | Linear (safe default)        |
 
 **Full theme catalog:** Vercel, Linear, Cursor, Stripe, Notion, Apple, Figma, Supabase, Lovable, Sentry, Claude, Uber, NVIDIA, Runway, xAI, Zapier — browse at https://github.com/VoltAgent/awesome-design-md to see each one's `DESIGN.md` before picking.
 
@@ -204,32 +247,32 @@ Whenever a task involves a service with an available MCP server or CLI, **use it
 
 Available MCP servers (call them silently when relevant):
 
-| Service | Use the MCP for |
-| --- | --- |
-| **Clerk** | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard |
-| **Convex** | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
-| **Resend** | Creating API keys, domains, sending test emails, checking delivery status |
-| **Vercel** | Listing deployments, env vars, logs, project info |
-| **Sentry** | Creating projects, querying errors, looking up issue details |
-| **Cloudflare** | Looking up zones, creating/listing DNS records |
-| **Stripe** | Creating products / prices / webhooks, querying customers, refunds, invoice lookup |
-| **Upstash** | Creating Redis databases, listing instances |
-| **PostHog** | Creating projects, running analytics queries |
-| **Trigger.dev** | Creating projects, retrieving API keys, monitoring runs |
-| **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
-| **Context7** | Library / framework / SDK documentation lookups |
-| **Playwright** | Browser automation for testing or scraping |
+| Service               | Use the MCP for                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Clerk**             | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard                                |
+| **Convex**            | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
+| **Resend**            | Creating API keys, domains, sending test emails, checking delivery status                                            |
+| **Vercel**            | Listing deployments, env vars, logs, project info                                                                    |
+| **Sentry**            | Creating projects, querying errors, looking up issue details                                                         |
+| **Cloudflare**        | Looking up zones, creating/listing DNS records                                                                       |
+| **Stripe**            | Creating products / prices / webhooks, querying customers, refunds, invoice lookup                                   |
+| **Upstash**           | Creating Redis databases, listing instances                                                                          |
+| **PostHog**           | Creating projects, running analytics queries                                                                         |
+| **Trigger.dev**       | Creating projects, retrieving API keys, monitoring runs                                                              |
+| **GitHub** (`gh` CLI) | Issues, PRs, repo creation                                                                                           |
+| **Context7**          | Library / framework / SDK documentation lookups                                                                      |
+| **Playwright**        | Browser automation for testing or scraping                                                                           |
 
 Available CLIs (use without asking — these are pre-installed):
 
-| CLI | Use it for |
-| --- | --- |
-| `npx convex …` | Convex deploys, env var sets, codegen |
-| `vercel …` | Linking, env push/pull, deploy, logs |
-| `stripe …` | Local webhook forwarding (`stripe listen`), test events (`stripe trigger`), products/prices/webhooks |
-| `gh …` | Anything GitHub — issues, PRs, repo create |
-| `npx trigger.dev …` | Trigger.dev init, deploy |
-| `resend …` (if installed) | Domain create/verify, fallback if MCP missing |
+| CLI                       | Use it for                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `npx convex …`            | Convex deploys, env var sets, codegen                                                                |
+| `vercel …`                | Linking, env push/pull, deploy, logs                                                                 |
+| `stripe …`                | Local webhook forwarding (`stripe listen`), test events (`stripe trigger`), products/prices/webhooks |
+| `gh …`                    | Anything GitHub — issues, PRs, repo create                                                           |
+| `npx trigger.dev …`       | Trigger.dev init, deploy                                                                             |
+| `resend …` (if installed) | Domain create/verify, fallback if MCP missing                                                        |
 
 **The rule:** if the task touches a service in the table above, your first move is the MCP/CLI call, not a question. Only fall back to "manual dashboard instructions" if the relevant MCP shows as not connected or the call returns an auth error.
 

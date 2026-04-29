@@ -1,0 +1,41 @@
+name: Lighthouse CI
+
+on:
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  lighthouse:
+    name: Lighthouse
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: '1'
+          NEXT_PUBLIC_APP_URL: 'http://localhost:3000'
+          NEXT_PUBLIC_PRODUCT_NAME: 'App'
+          NEXT_PUBLIC_CONVEX_URL: 'https://stub.convex.cloud'
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'pk_test_stub'
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          # Audit the home page of the production build
+          urls: |
+            http://localhost:3000
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+          # Thresholds — fail the check if scores drop below these
+          budgetPath: .github/lighthouse-budget.json
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

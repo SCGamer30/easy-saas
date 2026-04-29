@@ -20,6 +20,9 @@ if (typeof window !== 'undefined' && isPostHogEnabled) {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
     capture_pageview: true,
     capture_pageleave: true,
+    // Start opted-out; CookieConsent calls posthog.opt_in_capturing() on accept.
+    // Remove this line if your app doesn't show a consent banner.
+    opt_out_capturing_by_default: true,
   })
 }
 

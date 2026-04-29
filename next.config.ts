@@ -1,5 +1,10 @@
 import type { NextConfig } from 'next'
 import { withSentryConfig } from '@sentry/nextjs'
+import bundleAnalyzer from '@next/bundle-analyzer'
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 // Standard recommended security headers. CSP is intentionally omitted — it
 // has to enumerate every origin the app talks to (Clerk, Convex, Stripe,
@@ -38,10 +43,12 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default withSentryConfig(nextConfig, {
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-  silent: true,
-  sourcemaps: { deleteSourcemapsAfterUpload: true },
-  widenClientFileUpload: true,
-})
+export default withBundleAnalyzer(
+  withSentryConfig(nextConfig, {
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+    silent: true,
+    sourcemaps: { deleteSourcemapsAfterUpload: true },
+    widenClientFileUpload: true,
+  }),
+)
