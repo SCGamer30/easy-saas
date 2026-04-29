@@ -120,6 +120,22 @@ npx skillsadd ibelick/ui-skills   # Motion performance, accessibility, metadata 
 # Security
 npx skillsadd getsentry/skills  # Security review patterns (OWASP, input validation, secrets)
 
+# UI/UX intelligence — 67 styles, 96 palettes, 57 font pairings, 25 chart types
+# Free. Installs project-local config for every supported AI assistant
+# (Claude Code, Cursor, Windsurf, Copilot, Codex, Gemini, etc.)
+echo "Installing ui-ux-pro-max..."
+if ! command -v uipro >/dev/null 2>&1; then
+  npm install -g uipro-cli
+fi
+uipro init --ai all || echo "  ui-ux-pro-max init failed — run 'uipro init --ai all' manually inside the project."
+
+# 21st.dev Magic — AI-accessible library of curated shadcn-style components.
+# Adds the @21st-dev/magic MCP server to Claude Code's MCP config.
+# Requires a free API key from https://21st.dev/magic-mcp on first use.
+echo "Installing 21st.dev Magic MCP..."
+npx -y @21st-dev/cli@latest install claude || \
+  echo "  21st.dev install skipped — visit https://21st.dev/magic-mcp for manual setup."
+
 # Build graphify knowledge graph so the agent understands architecture from session 1
 # Requires: pip install graphify (or pip3 install graphify)
 echo "Building graphify knowledge graph..."

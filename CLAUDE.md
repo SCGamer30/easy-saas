@@ -263,22 +263,22 @@ Whenever a task involves a service with an available MCP server or CLI, **use it
 
 Available MCP servers (call them silently when relevant):
 
-| Service         | Use the MCP for                                                                                                      |
-| --------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Clerk**       | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard                                |
-| **Convex**      | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
-| **Resend**      | Creating API keys, domains, sending test emails, checking delivery status                                            |
-| **Vercel**      | Listing deployments, env vars, logs, project info                                                                    |
-| **Sentry**      | Creating projects, querying errors, looking up issue details                                                         |
-| **Cloudflare**  | Looking up zones, creating/listing DNS records                                                                       |
-| **Stripe**      | Creating products / prices / webhooks, querying customers, refunds, invoice lookup                                   |
-| **Upstash**     | Creating Redis databases, listing instances                                                                          |
-| **PostHog**     | Creating projects, running analytics queries                                                                         |
-| **Trigger.dev** | Creating projects, retrieving API keys, monitoring runs                                                              |
-
-| **GitHub** (`gh` CLI) | Issues, PRs, repo creation |
-| **Context7** | Library / framework / SDK documentation lookups |
-| **Playwright** | Browser automation for testing or scraping |
+| Service               | Use the MCP for                                                                                                      |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **Clerk**             | Creating apps, JWT templates, webhooks, listing users — anything in Clerk's dashboard                                |
+| **Convex**            | Querying data, inspecting function runs, debugging auth — instead of asking the user to "check the Convex dashboard" |
+| **Resend**            | Creating API keys, domains, sending test emails, checking delivery status                                            |
+| **Vercel**            | Listing deployments, env vars, logs, project info                                                                    |
+| **Sentry**            | Creating projects, querying errors, looking up issue details                                                         |
+| **Cloudflare**        | Looking up zones, creating/listing DNS records                                                                       |
+| **Stripe**            | Creating products / prices / webhooks, querying customers, refunds, invoice lookup                                   |
+| **Upstash**           | Creating Redis databases, listing instances                                                                          |
+| **PostHog**           | Creating projects, running analytics queries                                                                         |
+| **Trigger.dev**       | Creating projects, retrieving API keys, monitoring runs                                                              |
+| **21st.dev Magic**    | Fetching curated shadcn-style components (animated CTAs, bento grids, marquees) before hand-rolling one              |
+| **GitHub** (`gh` CLI) | Issues, PRs, repo creation                                                                                           |
+| **Context7**          | Library / framework / SDK documentation lookups                                                                      |
+| **Playwright**        | Browser automation for testing or scraping                                                                           |
 
 Available CLIs (use without asking — these are pre-installed):
 
@@ -415,6 +415,21 @@ npx shadcn@latest add dialog
 5. Apply the project's motion vocabulary (spring physics via Framer Motion where applicable).
 
 Never ship shadcn output in its default state.
+
+## UI design helpers (installed by `new-project.sh`)
+
+Two extra tools are installed alongside this boilerplate to fight the "generic AI template" look. Use them — don't skip past them when designing.
+
+- **ui-ux-pro-max** (free) — 67 styles, 96 palettes, 57 font pairings, 25 chart types, 13 stack-specific guides. Project-local config for every AI assistant. Invoke via the `ui-ux-pro-max` skill at the start of any non-trivial UI work — it grounds the agent in concrete style/palette/font choices instead of defaulting to Inter + indigo. Pairs with `DESIGN.md` and `TASTE.md`.
+- **21st.dev Magic MCP** — AI-accessible library of curated shadcn-style components (the kind on twentyfirst.dev). Use it when you need a component that goes beyond what `npx shadcn@latest add` ships — animated CTAs, marquee logos, bento grids, fancy testimonials, etc. Requires a free API key from https://21st.dev/magic-mcp on first call. Reach for this BEFORE writing a custom component from scratch.
+
+Order of operations for any new UI:
+
+1. Read `DESIGN.md` + `TASTE.md` (mandatory).
+2. If a component already exists in shadcn — use `npx shadcn@latest add <component>` and customize per the rules below.
+3. If shadcn doesn't have it but it's a common pattern — use the **21st.dev Magic MCP** before hand-rolling.
+4. For overall look-and-feel decisions (style, palette, typography, motion vocabulary) — invoke **ui-ux-pro-max**.
+5. Only fall back to fully custom code when none of the above fit.
 
 ## Scripts
 
