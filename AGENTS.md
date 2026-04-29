@@ -2,6 +2,21 @@
 
 > **Editing note:** `CLAUDE.md` and `AGENTS.md` are kept byte-identical so every coding agent (Claude Code reads `CLAUDE.md`, Codex/Cursor/Cline read `AGENTS.md`) sees the same rules. Edit `AGENTS.md`, then run `cp AGENTS.md CLAUDE.md` before committing. CI fails if they drift.
 
+## Knowledge Graph (read this first)
+
+This project uses **graphify** to maintain a structural knowledge graph of the codebase at `graphify-out/`.
+
+**Before answering architecture questions or touching multiple files:**
+
+1. Check if `graphify-out/GRAPH_REPORT.md` exists — read it first for god nodes and community structure.
+2. If `graphify-out/wiki/index.md` exists, navigate it instead of exploring raw files.
+3. After modifying code files, keep the graph current:
+   ```bash
+   python3 -m graphify . --output graphify-out/
+   ```
+
+`graphify-out/` is gitignored — it lives only on your machine. Regenerate it any time with the command above.
+
 ## Stack
 
 - **Framework:** Next.js 15 (App Router, React 19, TypeScript strict) — root layout at `app/layout.tsx`

@@ -120,6 +120,16 @@ npx skillsadd ibelick/ui-skills   # Motion performance, accessibility, metadata 
 # Security
 npx skillsadd getsentry/skills  # Security review patterns (OWASP, input validation, secrets)
 
+# Build graphify knowledge graph so the agent understands architecture from session 1
+# Requires: pip install graphify (or pip3 install graphify)
+echo "Building graphify knowledge graph..."
+if command -v python3 >/dev/null 2>&1 && python3 -c "import graphify" 2>/dev/null; then
+  python3 -m graphify . --output graphify-out/
+  echo "  graphify-out/ created — agents will read this before touching code."
+else
+  echo "  skipped (graphify not installed). Run: pip3 install graphify && python3 -m graphify . --output graphify-out/"
+fi
+
 # Create GitHub repo and push
 echo "Creating GitHub repo..."
 gh repo create "$GITHUB_USER/$PROJECT_NAME" --private --source=. --remote=origin --push

@@ -21,6 +21,9 @@ convex/_generated/
 # claude worktrees
 .claude/worktrees/
 
+# graphify knowledge graph — generated per-project, never committed
+graphify-out/
+
 # misc
 .DS_Store
 *.pem

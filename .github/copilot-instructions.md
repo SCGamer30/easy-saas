@@ -1,0 +1,13 @@
+The full project context, stack rules, architecture decisions, and coding conventions
+are in AGENTS.md at the repo root. Read it before making any changes.
+
+Key rules at a glance:
+
+- Default to Server Components; only 'use client' when needed
+- Icons: @phosphor-icons/react only — no lucide, no emoji
+- Styling: Tailwind CSS v4, CSS custom properties (var(--color-\*)), no h-screen
+- Env vars: import from @/lib/env, never process.env directly
+- Every API route: Zod validation + checkRateLimit() + auth() check
+- No console.log in production code — use Sentry
+- Read DESIGN.md before any UI change
+- Read TASTE.md before any UI change
