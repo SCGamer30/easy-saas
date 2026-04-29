@@ -16,9 +16,16 @@ const portalBodySchema = z
     returnUrl: z
       .string()
       .url()
-      .refine((url) => url.startsWith(appUrl), {
-        message: 'returnUrl must be on the same domain as the app',
-      })
+      .refine(
+        (url) => {
+          try {
+            return new URL(url).origin === new URL(appUrl).origin
+          } catch {
+            return false
+          }
+        },
+        { message: 'returnUrl must be on the same origin as the app' },
+      )
       .optional(),
   })
   .partial()
@@ -27,7 +34,10 @@ const portalBodySchema = z
 export async function POST(req: Request) {
   if (!isStripeConfigured()) {
     return NextResponse.json(
-      { error: 'Payments are not enabled in this project. Run `/add-stripe` in Claude Code to provision Stripe.' },
+      {
+        error:
+          'Payments are not enabled in this project. Run `/add-stripe` in Claude Code to provision Stripe.',
+      },
       { status: 503 },
     )
   }
@@ -41,7 +51,10 @@ export async function POST(req: Request) {
   if (!success) {
     return NextResponse.json(
       { error: 'Too many requests' },
-      { status: 429, headers: { 'Retry-After': String(Math.max(0, Math.ceil((reset - Date.now()) / 1000))) } },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.max(0, Math.ceil((reset - Date.now()) / 1000))) },
+      },
     )
   }
 

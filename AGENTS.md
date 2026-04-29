@@ -274,6 +274,7 @@ Available MCP servers (call them silently when relevant):
 | **Upstash**           | Creating Redis databases, listing instances                                                                          |
 | **PostHog**           | Creating projects, running analytics queries                                                                         |
 | **Trigger.dev**       | Creating projects, retrieving API keys, monitoring runs                                                              |
+| **beehiiv**           | OAuth auth, listing publications, creating/retrieving API keys — use when running `/add-newsletter`                  |
 | **GitHub** (`gh` CLI) | Issues, PRs, repo creation                                                                                           |
 | **Context7**          | Library / framework / SDK documentation lookups                                                                      |
 | **Playwright**        | Browser automation for testing or scraping                                                                           |

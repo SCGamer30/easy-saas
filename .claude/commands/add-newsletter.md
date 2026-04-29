@@ -16,6 +16,19 @@ Check that:
 
 ## 1. Get beehiiv credentials
 
+### MCP path (preferred — try this first)
+
+Check if the beehiiv MCP is connected. If it is, use it directly:
+
+1. Call the beehiiv MCP's **authenticate** tool — it will open the OAuth flow in the browser. The user authorizes once and the MCP holds the token.
+2. Call **list publications** to find the publication ID (`pub_...`).
+3. Call **create API key** (or list existing keys) to get a `bk-...` key scoped to this project.
+4. Write both to `.env.local` automatically — no manual copy-paste needed.
+
+If the MCP call returns an auth error or the beehiiv MCP is not listed, fall back to the manual steps below.
+
+### Manual path (fallback)
+
 Walk the user through this exactly:
 
 1. Open https://app.beehiiv.com — sign in or create an account.
