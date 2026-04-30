@@ -1,163 +1,201 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Usage: ./new-project.sh <project-name>
+# Usage: ./new-project.sh <project-name> [--local] [--github|--no-github] [--dry-run]
 # Example: ./new-project.sh my-saas-app
 
-set -e
+set -euo pipefail
 
-if [ -z "$1" ]; then
-  echo "Usage: ./new-project.sh <project-name>"
+TEMPLATE_REPO="${TEMPLATE_REPO:-https://github.com/SCGamer30/easy-saas.git}"
+PROJECTS_DIR="${PROJECTS_DIR:-$HOME/Documents/GitHub}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_NAME=""
+USE_LOCAL_TEMPLATE=0
+CREATE_GITHUB=1
+DRY_RUN=0
+
+usage() {
+  cat <<'EOF'
+Usage: ./new-project.sh <project-name> [options]
+
+Options:
+  --local       Copy the current local template instead of cloning GitHub.
+  --github     Create and push a private GitHub repo (default).
+  --no-github  Skip GitHub repo creation.
+  --dry-run    Print what would happen without making changes.
+  -h, --help   Show this help.
+
+Environment:
+  PROJECTS_DIR    Destination parent directory. Default: ~/Documents/GitHub
+  TEMPLATE_REPO   Git repo to clone. Default: https://github.com/SCGamer30/easy-saas.git
+EOF
+}
+
+log() {
+  printf '%s\n' "==> $*"
+}
+
+warn() {
+  printf '%s\n' "Warning: $*" >&2
+}
+
+die() {
+  printf '%s\n' "Error: $*" >&2
   exit 1
-fi
+}
 
-# Preflight: ensure required CLIs are installed before we do anything destructive.
-missing=()
-for bin in gh vercel npx; do
-  if ! command -v "$bin" >/dev/null 2>&1; then
-    missing+=("$bin")
-  fi
+need_bin() {
+  command -v "$1" >/dev/null 2>&1 || die "Missing required CLI: $1"
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --local)
+      USE_LOCAL_TEMPLATE=1
+      ;;
+    --github)
+      CREATE_GITHUB=1
+      ;;
+    --no-github)
+      CREATE_GITHUB=0
+      ;;
+    --dry-run)
+      DRY_RUN=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -*)
+      die "Unknown option: $1"
+      ;;
+    *)
+      if [ -n "$PROJECT_NAME" ]; then
+        die "Only one project name is allowed."
+      fi
+      PROJECT_NAME="$1"
+      ;;
+  esac
+  shift
 done
 
-if [ ${#missing[@]} -gt 0 ]; then
-  echo "Missing required CLIs: ${missing[*]}"
-  echo ""
-  echo "Install with:"
-  for bin in "${missing[@]}"; do
-    case "$bin" in
-      gh)     echo "  gh      → brew install gh           (https://cli.github.com)" ;;
-      vercel) echo "  vercel  → npm i -g vercel           (https://vercel.com/docs/cli)" ;;
-      npx)    echo "  npx     → install Node.js           (https://nodejs.org)" ;;
-    esac
-  done
+[ -n "$PROJECT_NAME" ] || {
+  usage
   exit 1
-fi
+}
 
-PROJECT_NAME="$1"
-GITHUB_USER=$(gh api user --jq .login 2>/dev/null)
-if [ -z "$GITHUB_USER" ]; then
-  echo "Could not detect GitHub user. Run: gh auth login"
-  exit 1
-fi
-PROJECTS_DIR="$HOME/Documents/GitHub"
 TARGET_DIR="$PROJECTS_DIR/$PROJECT_NAME"
 
-# Clone Easy SaaS boilerplate into new folder
-echo "Cloning Easy SaaS into $TARGET_DIR..."
-git clone "https://github.com/SCGamer30/easy-saas.git" "$TARGET_DIR"
-cd "$TARGET_DIR"
+log "Project name: $PROJECT_NAME"
+log "Target directory: $TARGET_DIR"
+if [ "$USE_LOCAL_TEMPLATE" -eq 1 ]; then
+  log "Template source: local checkout at $SCRIPT_DIR"
+else
+  log "Template source: $TEMPLATE_REPO"
+fi
+if [ "$CREATE_GITHUB" -eq 1 ]; then
+  log "GitHub repo: create and push private repo"
+else
+  log "GitHub repo: skipped"
+fi
 
-# Remove boilerplate remote
-git remote remove origin
+if [ "$DRY_RUN" -eq 1 ]; then
+  log "Dry run only. No files will be changed."
+  exit 0
+fi
 
-# Update package.json name
-sed -i '' "s/\"name\": \"easy-saas\"/\"name\": \"$PROJECT_NAME\"/" package.json
-sed -i '' "s/\"name\": \"boilerplate\"/\"name\": \"$PROJECT_NAME\"/" package.json
+need_bin git
+need_bin node
+need_bin npm
+need_bin npx
 
-# Update AGENTS.md and CLAUDE.md titles (kept as real duplicate files — see CI guard)
-sed -i '' "s/# Project Context for AI Agents/# $PROJECT_NAME — Project Context for AI Agents/" AGENTS.md
-cp AGENTS.md CLAUDE.md
+if [ "$CREATE_GITHUB" -eq 1 ]; then
+  need_bin gh
+fi
 
-# Copy env example
-cp .env.example .env.local
+[ ! -e "$TARGET_DIR" ] || die "$TARGET_DIR already exists."
+mkdir -p "$PROJECTS_DIR"
 
-# Install dependencies
-echo "Installing dependencies..."
+log "Creating project at $TARGET_DIR"
+if [ "$USE_LOCAL_TEMPLATE" -eq 1 ]; then
+  need_bin rsync
+  rsync -a \
+    --exclude='.git' \
+    --exclude='node_modules' \
+    --exclude='.next' \
+    --exclude='graphify-out' \
+    --exclude='convex/_generated' \
+    "$SCRIPT_DIR/" "$TARGET_DIR/"
+  cd "$TARGET_DIR"
+  git init
+else
+  git clone "$TEMPLATE_REPO" "$TARGET_DIR"
+  cd "$TARGET_DIR"
+  git remote remove origin 2>/dev/null || true
+fi
+
+log "Updating project metadata"
+node -e "
+const fs = require('fs');
+const name = process.argv[1];
+const pkgPath = 'package.json';
+const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+pkg.name = name;
+fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+for (const file of ['AGENTS.md', 'CLAUDE.md']) {
+  if (!fs.existsSync(file)) continue;
+  const body = fs.readFileSync(file, 'utf8')
+    .replace('# Project Context for AI Agents', '# ' + name + ' - Project Context for AI Agents');
+  fs.writeFileSync(file, body);
+}
+" "$PROJECT_NAME"
+
+if [ -f AGENTS.md ]; then
+  cp AGENTS.md CLAUDE.md
+fi
+
+if [ -f .env.example ]; then
+  log "Creating .env.local from .env.example"
+  cp .env.example .env.local
+else
+  warn "No .env.example found; skipping .env.local creation."
+fi
+
+log "Installing agent skills"
+if [ -x ./setup-skills.sh ]; then
+  ./setup-skills.sh --full || warn "Some skills failed to install. You can rerun ./setup-skills.sh --full after setup."
+else
+  warn "setup-skills.sh is missing; skipping skill install."
+fi
+
+log "Installing dependencies"
 npm install
 
-# Install Claude Code skills for the stack
-echo "Installing agent skills..."
-npx skills add https://github.com/vercel-labs/skills --skill find-skills  # skill discovery — lets the agent search for more skills on its own
-
-# Core framework
-npx skillsadd vercel-labs/next-skills      # Next.js 15 best practices + caching
-npx skillsadd vercel-labs/agent-skills     # React 19, RSC composition, Vercel deploy
-npx skillsadd shadcn/ui                    # shadcn component patterns
-npx skillsadd wshobson/agents              # TypeScript advanced types + Node.js patterns
-npx skillsadd pproenca/dot-skills          # Zod, React Hook Form, Framer Motion best practices
-
-# Auth
-npx skillsadd clerk/skills                 # Clerk Next.js patterns, webhooks, React patterns
-
-# Database
-npx skillsadd get-convex/agent-skills      # Convex queries, auth, schema patterns
-
-# Email
-npx skillsadd resend/resend-skills         # Resend API + CLI
-npx skillsadd resend/react-email           # React Email component patterns
-npx skillsadd resend/email-best-practices  # Email deliverability + best practices
-
-# Rate limiting + background jobs
-npx skillsadd upstash/skills               # Upstash Redis
-npx skillsadd upstash/ratelimit-js         # Upstash rate limiting (matches lib/ratelimit.ts)
-npx skillsadd triggerdotdev/skills         # Trigger.dev tasks, config, agents, realtime
-
-# Analytics + observability
-npx skillsadd posthog/posthog-for-claude   # PostHog instrumentation (built for Claude)
-npx skills add https://github.com/posthog/skills --skill integration-nextjs-app-router  # PostHog + Next.js App Router
-npx skills add https://github.com/posthog/skills --skill feature-flags-nextjs           # Feature flags for Next.js
-npx skills add https://github.com/posthog/skills --skill error-tracking-nextjs          # Error tracking for Next.js
-npx skillsadd sentry/dev                   # Sentry CLI workflows
-
-# Animation + WebGL (all in the stack)
-npx skillsadd greensock/gsap-skills        # GSAP + ScrollTrigger patterns
-npx skillsadd cloudai-x/threejs-skills     # Three.js fundamentals, shaders, animation, lighting
-npx skillsadd patricio0312rev/skills       # Framer Motion animator
-
-# Payments
-npx skillsadd stripe/ai                    # Official Stripe AI skills — best practices + upgrade guides
-
-# Testing
-npx skillsadd currents-dev/playwright-best-practices-skill  # Playwright testing
-npx skillsadd anthropics/skills                             # Web app testing patterns (57K installs)
-
-# Web quality, performance, accessibility
-npx skillsadd addyosmani/web-quality-skills  # Core Web Vitals, accessibility, SEO, performance — Addy Osmani
-
-# Design engineering + UI craft
-npx skillsadd emilkowalski/skill  # Design engineering — Emil Kowalski (Sonner author)
-npx skillsadd ibelick/ui-skills   # Motion performance, accessibility, metadata — ibelick
-
-# Security
-npx skillsadd getsentry/skills  # Security review patterns (OWASP, input validation, secrets)
-
-# UI/UX intelligence — 67 styles, 96 palettes, 57 font pairings, 25 chart types
-# Free. Installs project-local config for every supported AI assistant
-# (Claude Code, Cursor, Windsurf, Copilot, Codex, Gemini, etc.)
-echo "Installing ui-ux-pro-max..."
-if ! command -v uipro >/dev/null 2>&1; then
-  npm install -g uipro-cli
-fi
-uipro init --ai all || echo "  ui-ux-pro-max init failed — run 'uipro init --ai all' manually inside the project."
-
-# 21st.dev Magic — AI-accessible library of curated shadcn-style components.
-# Adds the @21st-dev/magic MCP server to Claude Code's MCP config.
-# Requires a free API key from https://21st.dev/magic-mcp on first use.
-echo "Installing 21st.dev Magic MCP..."
-npx -y @21st-dev/cli@latest install claude || \
-  echo "  21st.dev install skipped — visit https://21st.dev/magic-mcp for manual setup."
-
-# Build graphify knowledge graph so the agent understands architecture from session 1
-# Requires: pip install graphify (or pip3 install graphify)
-echo "Building graphify knowledge graph..."
+log "Building graphify knowledge graph"
 if command -v python3 >/dev/null 2>&1 && python3 -c "import graphify" 2>/dev/null; then
   python3 -m graphify . --output graphify-out/
-  echo "  graphify-out/ created — agents will read this before touching code."
+  log "graphify-out/ created."
 else
-  echo "  skipped (graphify not installed). Run: pip3 install graphify && python3 -m graphify . --output graphify-out/"
+  warn "graphify is not installed. Run: pip3 install graphify && python3 -m graphify . --output graphify-out/"
 fi
 
-# Create GitHub repo and push
-echo "Creating GitHub repo..."
-gh repo create "$GITHUB_USER/$PROJECT_NAME" --private --source=. --remote=origin --push
+if [ "$CREATE_GITHUB" -eq 1 ]; then
+  log "Creating GitHub repo"
+  GITHUB_USER="$(gh api user --jq .login 2>/dev/null || true)"
+  [ -n "$GITHUB_USER" ] || die "Could not detect GitHub user. Run: gh auth login"
+  gh repo create "$GITHUB_USER/$PROJECT_NAME" --private --source=. --remote=origin --push
+fi
 
-echo ""
-echo "============================================================"
-echo "  Project ready at $TARGET_DIR"
-echo "============================================================"
-echo ""
-echo "Next step:"
-echo "  1. cd $TARGET_DIR"
-echo "  2. Open Claude Code and run:  /setup"
-echo ""
-echo "Claude Code will handle Convex, Vercel, Sentry, Cloudflare,"
-echo "and walk you through the remaining manual dashboard steps."
+cat <<EOF
+
+============================================================
+  Project ready at $TARGET_DIR
+============================================================
+
+Next step:
+  cd "$TARGET_DIR"
+  claude
+  /setup
+
+Claude Code will handle Convex, Vercel, Sentry, Cloudflare,
+and the remaining service configuration through MCPs/CLIs.
+EOF

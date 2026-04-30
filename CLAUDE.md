@@ -19,8 +19,8 @@ This project uses **graphify** to maintain a structural knowledge graph of the c
 
 ## Stack
 
-- **Framework:** Next.js 15 (App Router, React 19, TypeScript strict) — root layout at `app/layout.tsx`
-- **Auth:** Clerk (`@clerk/nextjs` v6) — middleware at `middleware.ts`, sign-in/up at `/sign-in` and `/sign-up`, webhook at `app/api/webhooks/clerk/route.ts`
+- **Framework:** Next.js 16 (App Router, React 19, TypeScript strict) — root layout at `app/layout.tsx`
+- **Auth:** Clerk (`@clerk/nextjs` v6) — proxy at `proxy.ts`, sign-in/up at `/sign-in` and `/sign-up`, webhook at `app/api/webhooks/clerk/route.ts`
 - **Database:** Convex — schema at `convex/schema.ts`, functions at `convex/*.ts`, HTTP router at `convex/http.ts`
 - **Payments:** Stripe — helper at `lib/stripe.ts`, routes at `app/api/stripe/*`, subscription sync in `convex/subscriptions.ts`
 - **Email:** Resend — helper at `lib/resend.ts`, React Email templates at `emails/*.tsx` (welcome, subscription-confirmed, subscription-canceled, transactional base). `FROM_EMAIL` and `NEXT_PUBLIC_PRODUCT_NAME` env vars control sender / branding. Preview locally via `npm run email:dev`.
@@ -311,7 +311,7 @@ These are baseline expectations. Apply them automatically — don't ask permissi
 - **Every API route validates its body with Zod.** No raw `req.json()` followed by direct field access. Define a schema, parse, and 400 on failure.
 - **Every form validates with React Hook Form + Zod resolver.** Hand-rolled `useState`-driven validation is banned.
 - **Webhook handlers verify signatures.** Stripe via `stripe.webhooks.constructEvent`, Clerk via `svix`. Convex webhook mutations verify the shared secret. Never trust webhook payloads without verification — anyone with the URL can POST to them.
-- **Auth-gate every authenticated route.** Always call `auth()` from `@clerk/nextjs/server` and 401 if `userId` is null. Don't rely on the middleware alone — it's a backstop, not the only check.
+- **Auth-gate every authenticated route.** Always call `auth()` from `@clerk/nextjs/server` and 401 if `userId` is null. Don't rely on the proxy alone — it's a backstop, not the only check.
 
 ### Rate limiting must actually work
 

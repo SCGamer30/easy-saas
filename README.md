@@ -1,6 +1,6 @@
 # Easy SaaS
 
-Production-ready Next.js 15 starter for shipping a SaaS in an afternoon. Provisioned by Claude Code — clone, answer four questions, and you have a deployed app with auth, database, email, analytics, error monitoring, and rate limiting wired up.
+Production-ready Next.js 16 starter for shipping a SaaS in an afternoon. Provisioned by Claude Code — clone, answer four questions, and you have a deployed app with auth, database, email, analytics, error monitoring, and rate limiting wired up.
 
 **Setup time: ~3 minutes.** **Cost to run: $0/month** until real users show up.
 
@@ -31,18 +31,18 @@ Production-ready Next.js 15 starter for shipping a SaaS in an afternoon. Provisi
 
 Every service has a free tier large enough to launch and acquire your first thousand users without paying anything. Total monthly cost from clone to first paying customer: **$0**.
 
-| Service | Free tier | Outgrown around |
-| --- | --- | --- |
-| **Vercel** (hosting) | 100 GB bandwidth | 10k–50k visitors/mo |
-| **Clerk** (auth) | 10,000 MAU | 10k MAU → $25/mo |
-| **Convex** (database) | 1M function calls, 1 GB | Months of early-stage traffic |
-| **Resend** (email) | 3,000 emails/month | 3k → $20/mo for 50k |
-| **PostHog** (analytics) | 1M events/month | Most products take a long time to hit 1M |
-| **Sentry** (errors) | 5,000 errors/month | Only matters at high error rates |
-| **Upstash** (Redis) | 10,000 commands/day | Plenty for rate limiting |
-| **Trigger.dev** (jobs) | 5,000 runs/month | Most apps run <5k/month early on |
-| **Stripe** (payments) | No monthly fee | 2.9% + 30¢ per charge — pay only when you earn |
-| **Total** | **$0/month** | |
+| Service                 | Free tier               | Outgrown around                                |
+| ----------------------- | ----------------------- | ---------------------------------------------- |
+| **Vercel** (hosting)    | 100 GB bandwidth        | 10k–50k visitors/mo                            |
+| **Clerk** (auth)        | 10,000 MAU              | 10k MAU → $25/mo                               |
+| **Convex** (database)   | 1M function calls, 1 GB | Months of early-stage traffic                  |
+| **Resend** (email)      | 3,000 emails/month      | 3k → $20/mo for 50k                            |
+| **PostHog** (analytics) | 1M events/month         | Most products take a long time to hit 1M       |
+| **Sentry** (errors)     | 5,000 errors/month      | Only matters at high error rates               |
+| **Upstash** (Redis)     | 10,000 commands/day     | Plenty for rate limiting                       |
+| **Trigger.dev** (jobs)  | 5,000 runs/month        | Most apps run <5k/month early on               |
+| **Stripe** (payments)   | No monthly fee          | 2.9% + 30¢ per charge — pay only when you earn |
+| **Total**               | **$0/month**            |                                                |
 
 When you do outgrow a tier, every service is $20–30/mo at the next step and scales linearly. No seat-based pricing, no enterprise sales gates.
 
@@ -53,12 +53,12 @@ When you do outgrow a tier, every service is $20–30/mo at the next step and sc
 ### Prerequisites (one-time)
 
 ```bash
-brew install gh                                # GitHub CLI
+brew install gh                                # GitHub CLI, required for the default GitHub repo push
 brew install stripe/stripe-cli/stripe          # only if you'll use payments
-npm i -g vercel                                # Vercel CLI
+npm i -g vercel                                # used later by /setup
 ```
 
-You'll also need [Node.js 20+](https://nodejs.org) and [Claude Code](https://claude.com/claude-code).
+You'll also need [Node.js 24+](https://nodejs.org) and [Claude Code](https://claude.com/claude-code).
 
 ### Create a project
 
@@ -69,13 +69,25 @@ cd ~/Documents/GitHub/my-app
 claude
 ```
 
+`new-project.sh` installs the recommended agent skills automatically near the start of setup, then installs app dependencies, builds the local graphify knowledge graph when available, and creates a private GitHub repo by default.
+
+Useful setup variants:
+
+```bash
+PROJECTS_DIR=~/Developer ./new-project.sh my-app  # choose a different parent folder
+./new-project.sh my-app --local                   # copy this local checkout instead of cloning GitHub
+./new-project.sh my-app --no-github               # skip repo creation and push
+./new-project.sh my-app --dry-run                 # print the plan without changing files
+./setup-skills.sh --full                          # rerun the automatic skills install
+```
+
 Inside Claude Code:
 
 ```
 /setup
 ```
 
-Answer four questions — what you're building, who it's for, brand preference, payments now or later — and Claude provisions everything. From clone to running locally: about three minutes.
+Answer four questions — what you're building, who it's for, brand preference, payments now or later — and Claude provisions everything.
 
 ### Run it
 
@@ -89,11 +101,11 @@ npm run email:dev    # React Email preview on http://localhost:3001
 
 ## Slash commands
 
-| Command | What it does |
-| --- | --- |
-| `/setup` | Provisions auth, DB, email, analytics, errors, rate limit, jobs, design theme |
-| `/add-stripe` | Enables payments on a project that scaffolded without them |
-| `/add-ai` | Wires Vercel AI SDK + OpenRouter for chat/generation/agents |
+| Command       | What it does                                                                  |
+| ------------- | ----------------------------------------------------------------------------- |
+| `/setup`      | Provisions auth, DB, email, analytics, errors, rate limit, jobs, design theme |
+| `/add-stripe` | Enables payments on a project that scaffolded without them                    |
+| `/add-ai`     | Wires Vercel AI SDK + OpenRouter for chat/generation/agents                   |
 
 The senior UI/UX rules used to be a slash command — they're now a standing reference at [`TASTE.md`](./TASTE.md), mandated by AGENTS.md before any UI work.
 
@@ -103,41 +115,54 @@ The senior UI/UX rules used to be a slash command — they're now a standing ref
 
 `/setup` provisions services through a mix of CLIs and MCP servers. You install the MCPs once for your account; they're reused across every project you scaffold from this boilerplate.
 
-| Service | Provisioned via |
-| --- | --- |
-| Convex | `npx convex dev` (CLI) |
-| Vercel | `vercel link` (CLI) |
-| Clerk | Clerk MCP — creates app, JWT template, webhook |
-| Resend | Resend MCP — creates API key, domain, verifies it |
+| Service        | Provisioned via                                           |
+| -------------- | --------------------------------------------------------- |
+| Convex         | `npx convex dev` (CLI)                                    |
+| Vercel         | `vercel link` (CLI)                                       |
+| Clerk          | Clerk MCP — creates app, JWT template, webhook            |
+| Resend         | Resend MCP — creates API key, domain, verifies it         |
 | Cloudflare DNS | Cloudflare MCP — writes Vercel CNAME + Resend MX/SPF/DKIM |
-| Sentry | Sentry MCP — creates project, returns DSN |
-| Upstash | Upstash MCP — creates Redis DB |
-| PostHog | PostHog MCP — creates project, returns API key |
-| Stripe | Stripe MCP / CLI (only on `/add-stripe`) |
-| Trigger.dev | `npx trigger.dev init` (CLI) |
-| GitHub | `gh` CLI — creates repo, pushes initial commit |
-| Design theme | `curl` from VoltAgent's awesome-design-md → `DESIGN.md` |
+| Sentry         | Sentry MCP — creates project, returns DSN                 |
+| Upstash        | Upstash MCP — creates Redis DB                            |
+| PostHog        | PostHog MCP — creates project, returns API key            |
+| Stripe         | Stripe MCP / CLI (only on `/add-stripe`)                  |
+| Trigger.dev    | `npx trigger.dev init` (CLI)                              |
+| GitHub         | `gh` CLI — creates repo, pushes initial commit            |
+| Design theme   | `curl` from VoltAgent's awesome-design-md → `DESIGN.md`   |
 
 After all that, the only manual click left is grabbing two **Stripe API keys** from the dashboard — and only if you opted into payments. Stripe doesn't expose secret keys via API, by design.
+
+### Setup troubleshooting
+
+If setup exits early, it prints the step it was running and leaves any partial project at the target directory so you can inspect it. Common checks:
+
+```bash
+ls "$PROJECTS_DIR"
+gh auth status
+bash -n new-project.sh setup-skills.sh
+./setup-skills.sh --list
+```
+
+If a skill registry or optional UI tool is temporarily unavailable, rerun `./setup-skills.sh --full` inside the generated project.
 
 ### Recommended MCP servers
 
 Install whichever you want — `/setup` works with whatever subset you have and falls back to manual instructions for anything missing. Each MCP is a one-time install in `~/.claude.json`; reused across every project.
 
-| MCP | Install command (Claude Code) | Docs |
-| --- | --- | --- |
-| Clerk | `claude mcp add clerk --transport http https://mcp.clerk.com/mcp` | [clerk.com/docs/guides/ai/mcp/clerk-mcp-server](https://clerk.com/docs/guides/ai/mcp/clerk-mcp-server) |
-| Convex | `claude mcp add-json convex '{"type":"stdio","command":"npx","args":["convex","mcp","start"]}'` | [docs.convex.dev/ai/convex-mcp-server](https://docs.convex.dev/ai/convex-mcp-server) |
-| Resend | `claude mcp add resend -e RESEND_API_KEY=<your_key> -- npx -y resend-mcp` | [resend.com/docs/mcp-server](https://resend.com/docs/mcp-server) |
-| Vercel | `claude mcp add --transport http vercel https://mcp.vercel.com` | [vercel.com/docs/agent-resources/vercel-mcp](https://vercel.com/docs/agent-resources/vercel-mcp#claude-code) |
-| Sentry | `claude mcp add --transport http sentry https://mcp.sentry.dev/mcp` | [docs.sentry.io/product/sentry-mcp](https://docs.sentry.io/product/sentry-mcp/) |
-| Cloudflare | Add via the Claude.ai → Settings → Connectors marketplace (no CLI yet) | [developers.cloudflare.com/agents/model-context-protocol](https://developers.cloudflare.com/agents/model-context-protocol/) |
-| Stripe | `claude mcp add --transport http stripe https://mcp.stripe.com/` | [docs.stripe.com/mcp](https://docs.stripe.com/mcp) |
-| Upstash | `claude mcp add --scope user upstash -- npx -y @upstash/mcp-server@latest --email <your_email> --api-key <your_key>` | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server) |
-| PostHog | `claude mcp add --transport http posthog https://mcp.posthog.com/mcp -s user` | [posthog.com/docs/model-context-protocol/claude-code](https://posthog.com/docs/model-context-protocol/claude-code) |
-| Trigger.dev | `npx trigger.dev@latest install-mcp --client claude-code` | [trigger.dev/docs/mcp-server](https://trigger.dev/docs/mcp-server) |
-| Context7 | `npx ctx7` (auto-config) | [context7.com](https://context7.com) |
-| Playwright | Built into Claude Code | — |
+| MCP         | Install command (Claude Code)                                                                                        | Docs                                                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Clerk       | `claude mcp add clerk --transport http https://mcp.clerk.com/mcp`                                                    | [clerk.com/docs/guides/ai/mcp/clerk-mcp-server](https://clerk.com/docs/guides/ai/mcp/clerk-mcp-server)                      |
+| Convex      | `claude mcp add-json convex '{"type":"stdio","command":"npx","args":["convex","mcp","start"]}'`                      | [docs.convex.dev/ai/convex-mcp-server](https://docs.convex.dev/ai/convex-mcp-server)                                        |
+| Resend      | `claude mcp add resend -e RESEND_API_KEY=<your_key> -- npx -y resend-mcp`                                            | [resend.com/docs/mcp-server](https://resend.com/docs/mcp-server)                                                            |
+| Vercel      | `claude mcp add --transport http vercel https://mcp.vercel.com`                                                      | [vercel.com/docs/agent-resources/vercel-mcp](https://vercel.com/docs/agent-resources/vercel-mcp#claude-code)                |
+| Sentry      | `claude mcp add --transport http sentry https://mcp.sentry.dev/mcp`                                                  | [docs.sentry.io/product/sentry-mcp](https://docs.sentry.io/product/sentry-mcp/)                                             |
+| Cloudflare  | Add via the Claude.ai → Settings → Connectors marketplace (no CLI yet)                                               | [developers.cloudflare.com/agents/model-context-protocol](https://developers.cloudflare.com/agents/model-context-protocol/) |
+| Stripe      | `claude mcp add --transport http stripe https://mcp.stripe.com/`                                                     | [docs.stripe.com/mcp](https://docs.stripe.com/mcp)                                                                          |
+| Upstash     | `claude mcp add --scope user upstash -- npx -y @upstash/mcp-server@latest --email <your_email> --api-key <your_key>` | [github.com/upstash/mcp-server](https://github.com/upstash/mcp-server)                                                      |
+| PostHog     | `claude mcp add --transport http posthog https://mcp.posthog.com/mcp -s user`                                        | [posthog.com/docs/model-context-protocol/claude-code](https://posthog.com/docs/model-context-protocol/claude-code)          |
+| Trigger.dev | `npx trigger.dev@latest install-mcp --client claude-code`                                                            | [trigger.dev/docs/mcp-server](https://trigger.dev/docs/mcp-server)                                                          |
+| Context7    | `npx ctx7` (auto-config)                                                                                             | [context7.com](https://context7.com)                                                                                        |
+| Playwright  | Built into Claude Code                                                                                               | —                                                                                                                           |
 
 After running each command, restart Claude Code and run `/mcp` to confirm `connected`. Most use OAuth — Claude will prompt you to authorize on first use. The Resend and Upstash entries take an API key inline; grab those from each provider's dashboard first.
 
@@ -157,7 +182,7 @@ The boilerplate already configures custom-domain email — change `FROM_EMAIL` i
 
 You don't need everything. Common patterns:
 
-- **Marketing site** — keep Next.js, Tailwind, motion stack, SEO, analytics. Delete `convex/`, `app/sign-in/`, `app/api/stripe/`, `middleware.ts`. ~5 minutes of pruning.
+- **Marketing site** — keep Next.js, Tailwind, motion stack, SEO, analytics. Delete `convex/`, `app/sign-in/`, `app/api/stripe/`, `proxy.ts`. ~5 minutes of pruning.
 - **SaaS without payments yet** — answer "later" to `/setup`'s payment question. Stripe scaffolding stays dormant until `/add-stripe`.
 - **Full SaaS** — answer "now". Everything wires up in one shot.
 
@@ -200,7 +225,7 @@ You're free to use, modify, distribute, and build commercial products on top of 
 
 1. **Keep the `LICENSE` and `NOTICE` files** in any distribution (source or binary).
 2. **Credit the original author** somewhere visible — README, "About" page, credits screen, footer. Suggested attribution:
-   > *Built on Easy SaaS Boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas*
+   > _Built on Easy SaaS Boilerplate by Shaurya Chowdhri — https://github.com/SCGamer30/easy-saas_
 
 That's it. Ship whatever you want.
 

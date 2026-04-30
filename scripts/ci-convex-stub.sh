@@ -21,8 +21,10 @@ export declare const internal: any
 EOF
 
 cat > "$DIR/api.js" <<'EOF'
-export const api = new Proxy({}, { get: () => new Proxy({}, { get: () => () => ({}) }) })
-export const internal = api
+import { anyApi } from 'convex/server'
+
+export const api = anyApi
+export const internal = anyApi
 EOF
 
 cat > "$DIR/server.d.ts" <<'EOF'

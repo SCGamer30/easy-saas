@@ -1,13 +1,15 @@
-import type { Metadata } from 'next'
 import './globals.css'
 import { Providers } from '@/components/providers'
 import { CookieConsent } from '@/components/cookie-consent'
 import { FeedbackButton } from '@/components/feedback-button'
+import { generateMeta } from '@/lib/metadata'
 
-export const metadata: Metadata = {
-  title: 'App',
-  description: '',
-}
+const productName = process.env.NEXT_PUBLIC_PRODUCT_NAME ?? 'Easy SaaS'
+
+export const metadata = generateMeta({
+  title: productName,
+  description: 'Production-ready SaaS starter with auth, database, email, analytics, and billing.',
+})
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

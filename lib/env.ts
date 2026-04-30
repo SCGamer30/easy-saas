@@ -17,19 +17,31 @@
 
 import { z } from 'zod'
 
+const realValue = (name: string) =>
+  z.string().refine((value) => !value.includes('...'), {
+    message: `${name} still contains the .env.example placeholder`,
+  })
+
+const emptyToUndefined = (value: unknown) => (value === '' ? undefined : value)
+
 const clientSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url(),
   NEXT_PUBLIC_PRODUCT_NAME: z.string().min(1).default('App'),
-  NEXT_PUBLIC_CONVEX_URL: z.string().url(),
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().startsWith('pk_'),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
-  NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
-  NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
-  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+  NEXT_PUBLIC_CONVEX_URL: realValue('NEXT_PUBLIC_CONVEX_URL').pipe(z.string().url()),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: realValue('NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY').pipe(
+    z.string().startsWith('pk_'),
+  ),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.preprocess(
+    emptyToUndefined,
+    realValue('NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY').pipe(z.string().startsWith('pk_')).optional(),
+  ),
+  NEXT_PUBLIC_POSTHOG_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+  NEXT_PUBLIC_POSTHOG_HOST: z.preprocess(emptyToUndefined, z.string().url().optional()),
+  NEXT_PUBLIC_SENTRY_DSN: z.preprocess(emptyToUndefined, z.string().url().optional()),
 })
 
 const serverSchema = z.object({
-  CLERK_SECRET_KEY: z.string().startsWith('sk_'),
+  CLERK_SECRET_KEY: realValue('CLERK_SECRET_KEY').pipe(z.string().startsWith('sk_')),
   CLERK_WEBHOOK_SECRET: z.string().optional(),
   CONVEX_WEBHOOK_SECRET: z.string().optional(),
 

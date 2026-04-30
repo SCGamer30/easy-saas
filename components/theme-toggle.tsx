@@ -8,7 +8,7 @@
 //   import { ThemeToggle } from '@/components/theme-toggle'
 //   <ThemeToggle />
 
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useTheme } from 'next-themes'
 import { Sun, Moon, Monitor } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
@@ -19,12 +19,17 @@ const OPTIONS = [
   { value: 'dark', label: 'Dark', Icon: Moon },
 ] as const
 
+function subscribeMounted() {
+  return () => {}
+}
+
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  // Avoid hydration mismatch — only render the active state after mount
-  useEffect(() => setMounted(true), [])
+  const mounted = useSyncExternalStore(
+    subscribeMounted,
+    () => true,
+    () => false,
+  )
 
   return (
     <div
