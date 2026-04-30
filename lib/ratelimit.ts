@@ -46,8 +46,13 @@ function getLimiters(): Record<RatelimitKind, Ratelimit> {
 
 export async function checkRateLimit(kind: RatelimitKind, identifier: string) {
   if (!isRateLimitConfigured()) {
-    // No Upstash configured — treat every request as allowed. The user can
-    // wire Upstash later via /setup; until then, routes still work.
+    if (process.env.NODE_ENV === 'production') {
+      // In production, missing Upstash means rate limiting is misconfigured.
+      // Fail closed so checkout/email/API routes are not silently unprotected.
+      return { success: false, limit: 0, remaining: 0, reset: Date.now() + 60_000 }
+    }
+    // No Upstash configured in local/dev — treat every request as allowed. The
+    // user can wire Upstash later via /setup; until then, routes still work.
     return { success: true, limit: Infinity, remaining: Infinity, reset: 0 }
   }
   const { success, limit, remaining, reset } = await getLimiters()[kind].limit(identifier)

@@ -6,6 +6,7 @@ import { api } from '@/convex/_generated/api'
 import {
   createCheckoutSession,
   createStripeCustomer,
+  getCheckoutPriceForPlan,
   getStripe,
   isStripeConfigured,
 } from '@/lib/stripe'
@@ -17,7 +18,11 @@ const convex = new ConvexHttpClient(clientEnv.NEXT_PUBLIC_CONVEX_URL)
 const appUrl = clientEnv.NEXT_PUBLIC_APP_URL
 
 const checkoutBodySchema = z.object({
-  priceId: z.string().startsWith('price_').min(1),
+  plan: z
+    .string()
+    .min(1)
+    .max(64)
+    .regex(/^[a-z0-9_-]+$/),
   successUrl: z
     .string()
     .url()
@@ -79,7 +84,12 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   }
-  const { priceId, successUrl, cancelUrl } = parsed.data
+  const { plan, successUrl, cancelUrl } = parsed.data
+
+  const priceId = await getCheckoutPriceForPlan(plan)
+  if (!priceId) {
+    return NextResponse.json({ error: 'Unknown or inactive plan' }, { status: 400 })
+  }
 
   const user = await currentUser()
   const email = user?.primaryEmailAddress?.emailAddress

@@ -38,6 +38,27 @@ export function getStripe(): Stripe {
   return _stripe
 }
 
+export function getAllowedStripePlans(): string[] {
+  const configured = process.env.STRIPE_ALLOWED_PLANS
+  const plans = configured ? configured.split(',') : ['pro', 'studio']
+  return plans.map((plan) => plan.trim()).filter(Boolean)
+}
+
+export async function getCheckoutPriceForPlan(plan: string): Promise<string | null> {
+  const allowedPlans = getAllowedStripePlans()
+  if (!allowedPlans.includes(plan)) return null
+
+  const prices = await getStripe().prices.list({
+    active: true,
+    lookup_keys: [plan],
+    limit: 1,
+  })
+
+  const price = prices.data[0]
+  if (!price || price.lookup_key !== plan) return null
+  return price.id
+}
+
 export async function createStripeCustomer({
   email,
   name,

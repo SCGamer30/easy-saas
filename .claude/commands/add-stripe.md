@@ -56,6 +56,8 @@ stripe prices create \
 
 > **Lookup key discipline:** `pro` and `studio` are wired into `useUser()` (`isPro`, `isStudio` booleans). If you change them, update `hooks/use-user.ts` in the same commit — mismatches cause silent billing bugs where paid users show as unpaid.
 
+Set `STRIPE_ALLOWED_PLANS=pro,studio` in `.env.local`. Checkout accepts plan lookup keys from this allowlist and resolves the active Stripe price server-side; never send raw price IDs from the client.
+
 ## 4. Create the production webhook
 
 Replace `<your-domain>` with the Vercel production URL (run `vercel ls` if unsure):
@@ -79,6 +81,7 @@ sed -i '' "s|^STRIPE_WEBHOOK_SECRET=.*|STRIPE_WEBHOOK_SECRET=$WEBHOOK_SECRET|" .
 vercel env add NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY production
 vercel env add STRIPE_SECRET_KEY production
 vercel env add STRIPE_WEBHOOK_SECRET production
+vercel env add STRIPE_ALLOWED_PLANS production
 ```
 
 ## 6. Local dev webhook forwarding

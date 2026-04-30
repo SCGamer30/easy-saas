@@ -108,11 +108,11 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "list" ]; then
 
   log "Installing ui-ux-pro-max"
   if [ "$MODE" = "list" ]; then
-    printf '    npm install -g uipro-cli\n'
+    printf '    npm install -g uipro-cli@2.2.3\n'
     printf '    uipro init --ai all --yes\n'
   else
     if ! command -v uipro >/dev/null 2>&1; then
-      npm install -g uipro-cli || FAILED+=("ui-ux-pro-max CLI")
+      npm install -g uipro-cli@2.2.3 || FAILED+=("ui-ux-pro-max CLI")
     fi
     if command -v uipro >/dev/null 2>&1; then
       uipro init --ai all --yes || uipro init --ai all --non-interactive || FAILED+=("ui-ux-pro-max init")
@@ -121,8 +121,8 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "list" ]; then
 
   log "Installing 21st.dev Magic MCP"
   if [ "$MODE" = "list" ]; then
-    printf '    npx -y @21st-dev/cli@latest install claude\n'
-  elif ! npx -y @21st-dev/cli@latest install claude; then
+    printf '    npx -y @21st-dev/cli@0.0.29 install claude\n'
+  elif ! npx -y @21st-dev/cli@0.0.29 install claude; then
     FAILED+=("21st.dev Magic MCP")
     warn "21st.dev Magic MCP failed. Visit https://21st.dev/magic-mcp for manual setup if needed."
   fi

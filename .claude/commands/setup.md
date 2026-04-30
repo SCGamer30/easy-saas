@@ -17,6 +17,7 @@ Before picking a theme, have a short conversation to understand the project. Pro
 4. **Are you adding payments now, or later?** Default is **later**. Most projects don't need Stripe on day one — ship the product first, add billing when there's something worth charging for. If "later," skip section B (Stripe) entirely; the user can run `/add-stripe` to enable it whenever they're ready. The boilerplate's `lib/stripe.ts` lazy-inits, so the app runs fine without `STRIPE_SECRET_KEY` set.
 
 Wait for the answers before moving on. Use them to:
+
 - Override the name-based theme heuristic if the project is clearly in a different category than the name suggests.
 - Inform `NEXT_PUBLIC_PRODUCT_NAME` and the tone of copy in placeholder pages.
 - Guide all future UI decisions (density, motion, color, typography) alongside `DESIGN.md`.
@@ -220,6 +221,8 @@ Paste the printed `STRIPE_WEBHOOK_SECRET` into `.env.local`.
 
 > **Lookup key discipline:** `pro` and `studio` map to `useUser()` booleans `isPro` / `isStudio`. If you change these, update `hooks/use-user.ts` in the same commit — mismatches cause silent billing bugs.
 
+Set `STRIPE_ALLOWED_PLANS=pro,studio` in `.env.local` and Vercel. Checkout accepts only plan lookup keys from this allowlist and resolves the active Stripe price on the server.
+
 **B4. Local dev webhook forwarding (keep running in a terminal):**
 
 ```bash
@@ -339,6 +342,7 @@ sed -i '' "s|^NEXT_PUBLIC_POSTHOG_KEY=.*|NEXT_PUBLIC_POSTHOG_KEY=$POSTHOG_KEY|" 
 If the Trigger.dev MCP is connected, it can retrieve the API key automatically — no dashboard visit needed.
 
 If the MCP is not connected:
+
 1. Go to https://cloud.trigger.dev and sign in.
 2. Click **New Project**. Name it.
 3. Go to **API Keys** in the left sidebar. Copy the **DEV Server** key (starts with `tr_dev_`).

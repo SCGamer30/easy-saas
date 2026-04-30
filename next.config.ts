@@ -6,17 +6,81 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 })
 
-// Standard recommended security headers. CSP is intentionally omitted — it
-// has to enumerate every origin the app talks to (Clerk, Convex, Stripe,
-// PostHog, Sentry, Resend, etc.) and is project-specific. Add it per-project
-// once the integrations are final; don't ship a default CSP that'll break
-// things silently.
+function originFromEnv(value: string | undefined) {
+  if (!value) return null
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}
+
+const appOrigin = originFromEnv(process.env.NEXT_PUBLIC_APP_URL)
+const convexOrigin = originFromEnv(process.env.NEXT_PUBLIC_CONVEX_URL)
+const posthogOrigin = originFromEnv(process.env.NEXT_PUBLIC_POSTHOG_HOST)
+const sentryDsnOrigin = originFromEnv(process.env.NEXT_PUBLIC_SENTRY_DSN)
+
+const csp = [
+  ['default-src', "'self'"],
+  [
+    'script-src',
+    "'self'",
+    "'unsafe-inline'",
+    'https://*.clerk.com',
+    'https://*.clerk.accounts.dev',
+    'https://js.stripe.com',
+    'https://va.vercel-scripts.com',
+  ],
+  ['style-src', "'self'", "'unsafe-inline'"],
+  ['img-src', "'self'", 'data:', 'blob:', 'https://img.clerk.com', 'https://images.clerk.dev'],
+  ['font-src', "'self'", 'data:'],
+  [
+    'connect-src',
+    "'self'",
+    appOrigin,
+    convexOrigin,
+    posthogOrigin,
+    sentryDsnOrigin,
+    'https://*.clerk.com',
+    'https://*.clerk.accounts.dev',
+    'https://api.stripe.com',
+    'https://r.stripe.com',
+    'https://*.sentry.io',
+    'https://*.ingest.sentry.io',
+    'https://*.posthog.com',
+    'https://*.i.posthog.com',
+  ],
+  [
+    'frame-src',
+    "'self'",
+    'https://js.stripe.com',
+    'https://hooks.stripe.com',
+    'https://*.clerk.com',
+  ],
+  ['worker-src', "'self'", 'blob:'],
+  ['media-src', "'self'", 'blob:'],
+  ['object-src', "'none'"],
+  ['base-uri', "'self'"],
+  ['form-action', "'self'"],
+  ['frame-ancestors', "'none'"],
+  ['upgrade-insecure-requests'],
+]
+  .map((directive) => directive.filter(Boolean).join(' '))
+  .join('; ')
+
+// Standard recommended security headers. The CSP is intentionally service-aware
+// so Clerk, Convex, Stripe, PostHog, Sentry, and Vercel Analytics have the
+// origins they need without leaving every remote origin open.
 const securityHeaders = [
   ...(process.env.NODE_ENV === 'production'
     ? [
         {
           key: 'Strict-Transport-Security',
           value: 'max-age=63072000; includeSubDomains; preload',
+        },
+        {
+          key: 'Content-Security-Policy',
+          value: csp,
         },
       ]
     : []),

@@ -48,6 +48,7 @@ const serverSchema = z.object({
   // Stripe (opt-in via /add-stripe)
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_ALLOWED_PLANS: z.string().optional(),
 
   // Email
   RESEND_API_KEY: z.string().optional(),

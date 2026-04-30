@@ -32,8 +32,7 @@ export default function PricingPage() {
           }}
         >
           {/* Pricing cards go here. Wire each card's CTA to POST /api/stripe/create-checkout
-              with { priceId } where priceId is the Stripe price matching the lookup_key
-              (pro, studio, etc.). Set in Stripe dashboard → Product catalog. */}
+              with { plan: 'pro' } or another lookup key listed in STRIPE_ALLOWED_PLANS. */}
           <p style={{ color: 'var(--color-text-secondary)' }}>Pricing cards go here.</p>
         </section>
       </div>
