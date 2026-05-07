@@ -20,7 +20,7 @@ This project uses **graphify** to maintain a structural knowledge graph of the c
 ## Stack
 
 - **Framework:** Next.js 16 (App Router, React 19, TypeScript strict) — root layout at `app/layout.tsx`
-- **Auth:** Clerk (`@clerk/nextjs` v6) — proxy at `proxy.ts`, sign-in/up at `/sign-in` and `/sign-up`, webhook at `app/api/webhooks/clerk/route.ts`
+- **Auth:** Clerk (`@clerk/nextjs` v7) — proxy at `proxy.ts`, sign-in/up at `/sign-in` and `/sign-up`, webhook at `app/api/webhooks/clerk/route.ts`
 - **Database:** Convex — schema at `convex/schema.ts`, functions at `convex/*.ts`, HTTP router at `convex/http.ts`
 - **Payments:** Stripe — helper at `lib/stripe.ts`, routes at `app/api/stripe/*`, subscription sync in `convex/subscriptions.ts`
 - **Email:** Resend — helper at `lib/resend.ts`, React Email templates at `emails/*.tsx` (welcome, subscription-confirmed, subscription-canceled, transactional base). `FROM_EMAIL` and `NEXT_PUBLIC_PRODUCT_NAME` env vars control sender / branding. Preview locally via `npm run email:dev`.
