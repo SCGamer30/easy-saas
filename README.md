@@ -52,31 +52,61 @@ When you do outgrow a tier, every service is $20–30/mo at the next step and sc
 
 ### Prerequisites (one-time)
 
+- [Node.js 20+](https://nodejs.org)
+- [Claude Code](https://claude.com/claude-code)
+- `gh` (`brew install gh`) — the GitHub CLI, used by `/setup` for repo + integration steps
+
+### Recommended flow — `npx easy-saas init`
+
+1. Create a fresh GitHub repo in the browser (private or public — your call).
+2. Clone it locally, open it in Cursor (or your editor of choice), and `cd` in:
+
+   ```bash
+   git clone https://github.com/<you>/<your-repo>.git
+   cd <your-repo>
+   ```
+
+3. Bootstrap the boilerplate:
+
+   ```bash
+   npx easy-saas init
+   ```
+
+4. Open Claude Code in the directory and run:
+
+   ```
+   /setup
+   ```
+
+That's it. The CLI fetches the boilerplate, installs every dependency and agent skill (Next.js, Clerk, Convex, Stripe, PostHog, Sentry, GSAP, three.js, ui-ux-pro-max, 21st.dev Magic, etc.), builds the graphify knowledge graph, and hands you off to `/setup` for the remaining service wiring.
+
+CLI options:
+
 ```bash
-brew install gh                                # GitHub CLI, required for the default GitHub repo push
-brew install stripe/stripe-cli/stripe          # only if you'll use payments
-npm i -g vercel                                # used later by /setup
+npx easy-saas init --no-skills    # skip agent-skills install
+npx easy-saas init --no-install   # skip 'npm install'
+npx easy-saas init --force        # bootstrap into a non-empty directory
+npx easy-saas init --ref next     # pull from a non-default branch
 ```
 
-You'll also need [Node.js 24+](https://nodejs.org) and [Claude Code](https://claude.com/claude-code).
+### Alternative — clone-based flow (`new-project.sh`)
 
-### Create a project
+If you'd rather run a single shell command that creates the GitHub repo and target directory for you, the older flow is still supported:
 
 ```bash
+git clone https://github.com/SCGamer30/easy-saas.git ~/Documents/GitHub/easy-saas
 cd ~/Documents/GitHub/easy-saas
 ./new-project.sh my-app
 cd ~/Documents/GitHub/my-app
 claude
 ```
 
-`new-project.sh` installs the recommended agent skills automatically near the start of setup, then installs app dependencies, builds the local graphify knowledge graph when available, and creates a private GitHub repo by default.
-
-Useful setup variants:
+`new-project.sh` clones, renames, runs the same setup steps as the CLI, and creates a private GitHub repo by default. Useful variants:
 
 ```bash
-PROJECTS_DIR=~/Developer ./new-project.sh my-app  # choose a different parent folder
-./new-project.sh my-app --local                   # copy this local checkout instead of cloning GitHub
-./new-project.sh my-app --no-github               # skip repo creation and push
+PROJECTS_DIR=~/Developer ./new-project.sh my-app  # different parent folder
+./new-project.sh my-app --local                   # copy this checkout instead of cloning GitHub
+./new-project.sh my-app --no-github               # skip GitHub repo creation
 ./new-project.sh my-app --dry-run                 # print the plan without changing files
 ./setup-skills.sh --full                          # rerun the automatic skills install
 ```

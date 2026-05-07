@@ -37,7 +37,9 @@ install_skill() {
     return 0
   fi
 
-  if ! npx skills add "$@"; then
+  # --yes makes npx skip the "Ok to proceed?" prompt for first-time downloads.
+  # CI=1 + npm_config_yes=true cover most CLIs that gate behind interactive prompts.
+  if ! CI=1 npm_config_yes=true npx --yes skills add "$@"; then
     FAILED+=("$label")
     warn "$label failed"
   fi

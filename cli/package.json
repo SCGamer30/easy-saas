@@ -1,0 +1,38 @@
+{
+  "name": "easy-saas",
+  "version": "0.1.0",
+  "description": "Bootstrap a production-ready Next.js 16 + Clerk + Convex + Stripe SaaS starter into the current directory.",
+  "type": "module",
+  "bin": {
+    "easy-saas": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "saas",
+    "nextjs",
+    "clerk",
+    "convex",
+    "stripe",
+    "boilerplate",
+    "starter",
+    "claude-code",
+    "cursor"
+  ],
+  "author": "Shaurya Chowdhri",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SCGamer30/easy-saas.git",
+    "directory": "cli"
+  },
+  "homepage": "https://github.com/SCGamer30/easy-saas#readme",
+  "bugs": {
+    "url": "https://github.com/SCGamer30/easy-saas/issues"
+  }
+}
