@@ -1,6 +1,6 @@
 {
   "name": "easy-saas",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Bootstrap a production-ready Next.js 16 + Clerk + Convex + Stripe SaaS starter into the current directory.",
   "type": "module",
   "bin": {

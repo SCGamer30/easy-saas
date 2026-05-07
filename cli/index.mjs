@@ -196,17 +196,25 @@ async function init({ force, skills, install, ref }) {
     warn('Skipping skill install (--no-skills). Run `./setup-skills.sh --full` later.')
   }
 
-  // 10. graphify (best-effort)
-  log('Building graphify knowledge graph (best-effort)')
-  const graphify = spawnSync(
-    'python3',
-    ['-m', 'graphify', '.', '--output', 'graphify-out/'],
-    { cwd, stdio: 'pipe' },
-  )
-  if (graphify.status !== 0) {
-    warn(
-      'graphify is not installed. Run `pip3 install graphify && python3 -m graphify . --output graphify-out/` later.',
+  // 10. graphify — auto-install via pip3 if missing, then build the graph
+  if (commandExists('python3')) {
+    const probe = spawnSync('python3', ['-c', 'import graphify'], { stdio: 'pipe' })
+    if (probe.status !== 0) {
+      log('Installing graphify (pip3)')
+      const pip = commandExists('pip3') ? 'pip3' : 'pip'
+      spawnSync(pip, ['install', '--quiet', '--user', 'graphify'], { stdio: 'inherit' })
+    }
+    log('Building graphify knowledge graph')
+    const build = spawnSync(
+      'python3',
+      ['-m', 'graphify', '.', '--output', 'graphify-out/'],
+      { cwd, stdio: 'pipe' },
     )
+    if (build.status !== 0) {
+      warn('graphify build failed — run `python3 -m graphify . --output graphify-out/` later.')
+    }
+  } else {
+    warn('python3 not found — skipping graphify. Install Python 3 and rerun later.')
   }
 
   // 11. Cleanup
@@ -281,10 +289,16 @@ function parseFlags(rest) {
 }
 
 function ensureBin(name, hint) {
-  const r = spawnSync('which', [name], { stdio: 'pipe' })
-  if (r.status !== 0) {
+  if (!commandExists(name)) {
     throw new Error(`Missing required CLI: ${name}\n  → ${hint}`)
   }
+}
+
+function commandExists(name) {
+  const r = spawnSync(process.platform === 'win32' ? 'where' : 'which', [name], {
+    stdio: 'pipe',
+  })
+  return r.status === 0
 }
 
 function runStreamed(bin, argv, opts) {
