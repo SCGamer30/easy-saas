@@ -20,7 +20,7 @@
 //   7. ./setup-skills.sh --full  (non-interactive)
 //   8. Print "now run /setup in Claude Code"
 
-import { execSync, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import {
   cpSync,
   existsSync,

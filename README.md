@@ -20,7 +20,7 @@ Production-ready Next.js 16 starter for shipping a SaaS in an afternoon. Provisi
 - **Forms** — React Hook Form + Zod
 - **Toasts + theme** — Sonner + next-themes (light / system / dark)
 - **Motion** — Framer Motion + GSAP + Lenis smooth scroll
-- **Visual** — three.js + R3F + drei for WebGL, Rive for state-machine animations, Lottie for designer playback, AutoAnimate for list reorders
+- **Visual** — three.js + R3F + drei for WebGL, AutoAnimate for list reorders
 - **SEO + app shell** — metadata API, sitemap, robots, OG image, 404, loading skeleton, error boundaries
 - **Security headers + CI** — HSTS, X-Frame-Options, GitHub Actions lint + typecheck on every PR
 - **Auto-picked design system** — `/setup` writes a `DESIGN.md` matching your project type (Linear / Vercel / Stripe / Apple / etc.)

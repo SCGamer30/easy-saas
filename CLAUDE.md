@@ -33,8 +33,6 @@ This project uses **graphify** to maintain a structural knowledge graph of the c
 - **Icons:** `@phosphor-icons/react` exclusively — no lucide, no heroicons, no emoji
 - **Motion:** `framer-motion` (primary, React-declarative) and `gsap` + `ScrollTrigger` (imperative timelines, scroll-driven). Import GSAP from `lib/gsap.ts`, never directly. Page transitions: `components/page-transition.tsx` (Framer + AnimatePresence, App Router–native).
 - **WebGL:** `three` + `@react-three/fiber` + `@react-three/drei` — wrapper at `components/webgl-scene.tsx`. Always import via `next/dynamic({ ssr: false })` to keep three.js out of the initial bundle.
-- **Rive:** `@rive-app/react-canvas` — wrapper at `components/rive-scene.tsx`. Use for interactive/stateful animations with input-driven state machines.
-- **Lottie:** `@lottiefiles/dotlottie-react` — wrapper at `components/lottie-player.tsx`. Use for designer-exported playback animations (.lottie format preferred over legacy .json).
 - **AutoAnimate:** `@formkit/auto-animate/react` — hook at `hooks/use-auto-animate.ts`. Drop a single ref on a list container to auto-animate add/remove/reorder.
 - **Blend modes:** `components/blend-layer.tsx` — `<BlendLayer mode="difference">` for photo-negative cursors, crisp accent overlays. Keep blended subtrees small (compositor cost).
 - **Smooth Scroll:** `lenis` — wired globally via `components/smooth-scroll.tsx` inside `Providers`. Opt-out a region with `data-lenis-prevent` on the scroll container.
@@ -173,21 +171,19 @@ npm run analyze        # next build + bundle size treemap
 
 Four animation tools are available. Pick the right one per use case, don't reach for all of them on every project:
 
-| Use case                                                                                  | Tool                                                        | Why                                                               |
-| ----------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
-| Component entrance, hover, layout animations                                              | **Framer Motion**                                           | Declarative, React-native, spring physics built-in                |
-| Scroll-driven sequences (pin, parallax, story scroll)                                     | **GSAP + ScrollTrigger**                                    | Timelines with labels, scrubbing, snap — nothing else comes close |
-| Route transitions (App Router)                                                            | `components/page-transition.tsx`                            | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe      |
-| SVG path morphing, stroke-dash                                                            | **GSAP**                                                    | Use the same GSAP install — no separate library needed            |
-| Hero 3D, shader backgrounds, GPU-driven visuals                                           | `components/webgl-scene.tsx` (react-three-fiber)            | Dynamic-imported, lazy-loaded, drei helpers included              |
-| Designer-exported playback animation (empty state, hero illustration, success confetti)   | `components/lottie-player.tsx` (dotLottie)                  | Designer owns the animation, you embed the `.lottie` file         |
-| Interactive, input-driven animation (mascots, illustrated toggles, scrubbable characters) | `components/rive-scene.tsx` (Rive)                          | State machines respond to pointer/scroll/app state in real time   |
-| List/grid enter-leave-reorder animations                                                  | `hooks/use-auto-animate.ts` (AutoAnimate)                   | One ref, zero config — animates any children change automatically |
-| Inverted cursor / high-contrast overlays                                                  | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath               |
+| Use case                                              | Tool                                                        | Why                                                               |
+| ----------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
+| Component entrance, hover, layout animations          | **Framer Motion**                                           | Declarative, React-native, spring physics built-in                |
+| Scroll-driven sequences (pin, parallax, story scroll) | **GSAP + ScrollTrigger**                                    | Timelines with labels, scrubbing, snap — nothing else comes close |
+| Route transitions (App Router)                        | `components/page-transition.tsx`                            | Framer `AnimatePresence` keyed on `usePathname()` — RSC-safe      |
+| SVG path morphing, stroke-dash                        | **GSAP**                                                    | Use the same GSAP install — no separate library needed            |
+| Hero 3D, shader backgrounds, GPU-driven visuals       | `components/webgl-scene.tsx` (react-three-fiber)            | Dynamic-imported, lazy-loaded, drei helpers included              |
+| List/grid enter-leave-reorder animations              | `hooks/use-auto-animate.ts` (AutoAnimate)                   | One ref, zero config — animates any children change automatically |
+| Inverted cursor / high-contrast overlays              | `components/blend-layer.tsx` (`mix-blend-mode: difference`) | Compositor-level, works with any content underneath               |
 
 Rules:
 
-- **Never install a new animation library.** The four above cover everything. If you think you need something else (Motion One, Theatre.js, etc.), first check whether GSAP or Framer already does it.
+- **Never install a new animation library.** The tools above cover everything. If you think you need something else (Motion One, Theatre.js, Rive, Lottie, etc.), first check whether GSAP or Framer already does it.
 - **GSAP in React:** always wrap timelines in `gsap.context(() => {...}, rootRef)` and call `ctx.revert()` on cleanup. Without this, animations leak on route changes.
 - **three.js imports:** always via `next/dynamic({ ssr: false })`. three.js is ~600KB gzipped — it should never hit pages that don't need it.
 - **mix-blend-mode cost:** forces an isolated compositor layer. Fine for small overlays, disastrous if you wrap the whole page.
@@ -323,7 +319,7 @@ These are baseline expectations. Apply them automatically — don't ask permissi
 
 - **No layout shift.** Every async-rendered piece needs a skeleton. Use `components/ui/skeleton.tsx` and `app/loading.tsx`.
 - **No FOUC, no FOIT.** Self-host fonts via `next/font` (Geist already wired). Don't use `<link rel="stylesheet">` to a Google Fonts URL.
-- **No render-blocking JS over 200KB.** Heavy dependencies (three.js, Lottie, Rive) MUST be `next/dynamic({ ssr: false })` imported. Don't co-locate them with data fetching.
+- **No render-blocking JS over 200KB.** Heavy dependencies (three.js, GSAP) MUST be `next/dynamic({ ssr: false })` imported. Don't co-locate them with data fetching.
 - **No reload jankiness.** Route transitions go through `components/page-transition.tsx` (300–400ms fade) — never instant white flash, never multi-second wait.
 - **Defer non-critical work.** Analytics, Sentry breadcrumbs, PostHog events — anything observability-flavored — runs after first paint, never blocks it.
 - **Verify with Lighthouse.** After a major change, the Performance score should stay ≥ 90. If it drops, find what regressed and fix it before shipping.
