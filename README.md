@@ -78,7 +78,7 @@ When you do outgrow a tier, every service is $20–30/mo at the next step and sc
    /setup
    ```
 
-That's it. The CLI fetches the boilerplate, installs every dependency and agent skill (Next.js, Clerk, Convex, Stripe, PostHog, Sentry, GSAP, three.js, ui-ux-pro-max, 21st.dev Magic, etc.), builds the graphify knowledge graph, and hands you off to `/setup` for the remaining service wiring.
+That's it. The CLI fetches the boilerplate, installs every dependency and agent skill (Next.js, Clerk, Convex, Stripe, PostHog, Sentry, GSAP, three.js, ui-ux-pro-max, etc.), builds the graphify knowledge graph, and hands you off to `/setup` for the remaining service wiring.
 
 CLI options:
 

@@ -121,13 +121,6 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "list" ]; then
     fi
   fi
 
-  log "Installing 21st.dev Magic MCP"
-  if [ "$MODE" = "list" ]; then
-    printf '    npx -y @21st-dev/cli@0.0.29 install claude\n'
-  elif ! npx -y @21st-dev/cli@0.0.29 install claude; then
-    FAILED+=("21st.dev Magic MCP")
-    warn "21st.dev Magic MCP failed. Visit https://21st.dev/magic-mcp for manual setup if needed."
-  fi
 fi
 
 if [ "${#FAILED[@]}" -gt 0 ]; then

@@ -14,7 +14,7 @@ One-command bootstrap for the [easy-saas](https://github.com/SCGamer30/easy-saas
 
 4. Open Claude Code (or Cursor → Claude Code) in the directory and run `/setup`.
 
-That's it. The CLI fetches the boilerplate, installs dependencies, installs the agent skills (Next.js, Clerk, Convex, Stripe, PostHog, Sentry, GSAP, three.js, ui-ux-pro-max, 21st.dev Magic, etc.), builds the graphify knowledge graph, and hands you off to Claude Code's `/setup` slash command for the remaining service wiring.
+That's it. The CLI fetches the boilerplate, installs dependencies, installs the agent skills (Next.js, Clerk, Convex, Stripe, PostHog, Sentry, GSAP, three.js, ui-ux-pro-max, etc.), builds the graphify knowledge graph, and hands you off to Claude Code's `/setup` slash command for the remaining service wiring.
 
 ## Why "init" instead of "create"
 
@@ -41,7 +41,6 @@ npx easy-saas init [options]
 - Production dependencies (`npm install`)
 - Claude Code agent skills for the entire stack (`./setup-skills.sh --full`)
 - [ui-ux-pro-max](https://github.com/zachblume/uipro) — free UI/UX intelligence for all AI assistants
-- [21st.dev Magic MCP](https://21st.dev/magic-mcp) — AI-accessible curated component library
 - A graphify knowledge graph at `graphify-out/` (best-effort; requires `pip3 install graphify`)
 
 ## Requirements
