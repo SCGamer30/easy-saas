@@ -20,6 +20,13 @@ convex/_generated/
 
 # claude worktrees
 .claude/worktrees/
+.claude/settings.local.json
+
+# agent skills — auto-installed by ./setup-skills.sh, never commit
+# (`.*/skills/` covers .claude/skills, .cursor/skills, .codex/skills, etc.
+# `.agents/` is the universal location used by skills CLI's `-a '*'` flag)
+.agents/
+.*/skills/
 
 # graphify knowledge graph — generated per-project, never committed
 graphify-out/
