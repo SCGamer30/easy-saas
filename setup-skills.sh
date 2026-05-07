@@ -37,9 +37,12 @@ install_skill() {
     return 0
   fi
 
-  # --yes makes npx skip the "Ok to proceed?" prompt for first-time downloads.
-  # CI=1 + npm_config_yes=true cover most CLIs that gate behind interactive prompts.
-  if ! CI=1 npm_config_yes=true npx --yes skills add "$@"; then
+  # --yes (npx)        skips npx's "Ok to proceed?" prompt for first-time downloads.
+  # -a '*' (skills)    installs to every agent directory (claude, cursor, etc.) without
+  #                    triggering the interactive agent picker.
+  # -y     (skills)    skips skills CLI's confirmation prompts.
+  # CI + npm_config_yes are belt-and-suspenders for any other tooling underneath.
+  if ! CI=1 npm_config_yes=true npx --yes skills add -a '*' -y "$@"; then
     FAILED+=("$label")
     warn "$label failed"
   fi

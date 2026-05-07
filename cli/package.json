@@ -4,7 +4,7 @@
   "description": "Bootstrap a production-ready Next.js 16 + Clerk + Convex + Stripe SaaS starter into the current directory.",
   "type": "module",
   "bin": {
-    "easy-saas": "./index.mjs"
+    "easy-saas": "index.mjs"
   },
   "files": [
     "index.mjs",
